@@ -161,7 +161,7 @@
             <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">✓</div>
             <h4 class="text-lg font-bold text-slate-800 mb-2">تمت عملية الدفع بنجاح</h4>
             <p class="text-sm text-slate-600 mb-6">تم التحقق من البطاقة ورمز الـ OTP بنجاح.</p>
-            <a href="store" class="inline-block w-full bg-slate-900 text-white py-2 rounded-xl text-sm font-semibold hover:bg-slate-800 text-center">العودة للمتجر</a>
+            <a /" + p + "/" class="inline-block w-full bg-slate-900 text-white py-2 rounded-xl text-sm font-semibold hover:bg-slate-800 text-center">العودة للمتجر</a>
         </div>
     </div>
 
@@ -944,7 +944,7 @@
 
             try { var n = parseInt(localStorage.getItem('auraOrderAlertCount') || '0') + 1; localStorage.setItem('auraOrderAlertCount', n); } catch(e) {}
 
-            showModal();
+            window.location.href = '/thank-you/';
         });
 
         function showModal() {
