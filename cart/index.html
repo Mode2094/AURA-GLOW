@@ -237,7 +237,7 @@
             }
             const total = cartItems.reduce((sum, item) => sum + (item.price * item.qty), 0) - discountAmount;
             localStorage.setItem('auraCheckoutTotal', JSON.stringify({ total: total < 0 ? 0 : total, discount: discountAmount }));
-            window.location.href = 'checkout/';
+            window.location.href='/checkout/';
         }
 
         loadCart();

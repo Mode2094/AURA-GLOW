@@ -520,14 +520,14 @@
     <script>
         (function() {
             var token = localStorage.getItem('adminToken');
-            if (!token) { window.location.href = 'admin-login/'; return; }
+            if (!token) { window.location.href='/admin-login/'; return; }
             console.log('[SECURITY] Admin panel secured | CSP: enabled | XFO: DENY');
         })();
 
         function logout() {
             localStorage.removeItem('adminToken');
             localStorage.removeItem('adminSessionStart');
-            window.location.href = 'admin-login/';
+            window.location.href='/admin-login/';
         }
     </script>
     <script src="../notify.js"></script>

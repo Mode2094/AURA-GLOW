@@ -66,7 +66,7 @@
             localStorage.setItem('adminToken', token);
             localStorage.setItem('adminLoginAttempts', '0');
             localStorage.setItem('adminSessionStart', Date.now());
-            window.location.href = 'admin/';
+            window.location.href='/admin/';
             return false;
         }
 
@@ -75,7 +75,7 @@
             try {
                 const data = JSON.parse(atob(token));
                 if (data.exp > Date.now()) {
-                    window.location.href = 'admin/';
+                    window.location.href='/admin/';
                 }
             } catch(e) {}
         }

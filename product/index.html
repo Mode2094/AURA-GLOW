@@ -274,13 +274,13 @@
                 btn.classList.add('bg-emerald-600');
                 btn.classList.remove('bg-stone-900','bg-amber-700');
                 setTimeout(function() {
-                    if (redirect) { window.location.href = 'cart/'; return; }
+                    if (redirect) { window.location.href='/cart/'; return; }
                     btn.innerHTML = orig;
                     btn.classList.remove('bg-emerald-600');
                     btn.classList.add(redirect ? 'bg-amber-700' : 'bg-stone-900');
                 }, 800);
             } else if (redirect) {
-                window.location.href = 'cart/';
+                window.location.href='/cart/';
             }
         }
 
