@@ -7,7 +7,8 @@
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' https: data:; connect-src 'self' https:; form-action 'self' https:">
     <link rel="icon" type="image/png" href="../logo.png">
-    <title>لوحة التحكم الإدارية - أورا جلو</title>
+    <title>لوحة التحكم الإدارية - AURA GLOW</title>
+    <link rel="manifest" href="/manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -587,7 +588,41 @@
         });
     </script>
     <script>
+        // Register PWA service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js');
+        }
+
+        // Request notification permission
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
+        // Show browser notification for new orders
+        var _lastOrderCount = 0;
+        function checkNewOrders() {
+            if (!('Notification' in window) || Notification.permission !== 'granted') return;
+            loadOrdersFromSupabase().then(function(list) {
+                if (_lastOrderCount === 0) { _lastOrderCount = list.length; return; }
+                if (list.length > _lastOrderCount) {
+                    var newOrders = list.slice(0, list.length - _lastOrderCount);
+                    newOrders.forEach(function(o) {
+                        var n = new Notification('🛒 طلب جديد من ' + o.name, {
+                            body: 'المجموع: ' + o.total + '.00 ₪ | ' + o.phone,
+                            icon: '/logo.png',
+                            tag: 'order-' + o.id,
+                            vibrate: [200, 100, 200]
+                        });
+                        setTimeout(function() { n.close(); }, 8000);
+                    });
+                }
+                _lastOrderCount = list.length;
+            }).catch(function() {});
+        }
+        setInterval(checkNewOrders, 10000);
+
         (function() {
+            var sessionData = localStorage.getItem('auraAdminSession');
             var sessionData = localStorage.getItem('auraAdminSession');
             if (!sessionData) { window.location.href='/admin-login/'; return; }
             var session = JSON.parse(sessionData);

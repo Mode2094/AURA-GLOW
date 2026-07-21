@@ -1,0 +1,24 @@
+{
+  "name": "AURA GLOW - لوحة التحكم",
+  "short_name": "AURA GLOW Admin",
+  "description": "لوحة التحكم الإدارية لمتجر AURA GLOW",
+  "start_url": "/mode/",
+  "display": "standalone",
+  "background_color": "#f5f5f4",
+  "theme_color": "#78350f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["shopping", "business"],
+  "lang": "he"
+}
