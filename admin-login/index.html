@@ -36,61 +36,36 @@
             <button type="submit" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-bold py-3 rounded-xl text-sm shadow-lg transition">تسجيل الدخول</button>
         </form>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../supabase.js"></script>
     <script>
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
-            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
             const errorEl = document.getElementById('login-error');
-
-            if (username !== 'moderohe8@gmail.com' || password !== 'Mod123e4@@@') {
-                errorEl.textContent = '❌ اسم المستخدم أو كلمة المرور غير صحيحة. المحاولات المتبقية: ' + (3 - (parseInt(localStorage.getItem('adminLoginAttempts') || '0')));
+            
+            errorEl.classList.add('hidden');
+            
+            var result = await signInAdmin(email, password);
+            
+            if (result.error) {
+                errorEl.textContent = '❌ فشل تسجيل الدخول: ' + (result.error.message || result.error);
                 errorEl.classList.remove('hidden');
-                let attempts = parseInt(localStorage.getItem('adminLoginAttempts') || '0') + 1;
-                localStorage.setItem('adminLoginAttempts', attempts);
-                if (attempts >= 3) {
-                    localStorage.setItem('adminLockTime', Date.now());
-                    errorEl.textContent = '❌ تم تجاوز عدد المحاولات المسموح. الرجاء المحاولة بعد 30 ثانية.';
-                    document.getElementById('username').disabled = true;
-                    document.getElementById('password').disabled = true;
-                    document.querySelector('button[type=submit]').disabled = true;
-                    setTimeout(function() { 
-                        localStorage.setItem('adminLoginAttempts', '0');
-                        location.reload();
-                    }, 30000);
-                }
                 return false;
             }
-
-            const token = btoa(JSON.stringify({ user: username, time: Date.now(), exp: Date.now() + 3600000 }));
-            localStorage.setItem('adminToken', token);
-            localStorage.setItem('adminLoginAttempts', '0');
-            localStorage.setItem('adminSessionStart', Date.now());
-            window.location.href='/mode/';
+            
+            localStorage.removeItem('adminLoginAttempts');
+            window.location.href = '/mode/';
             return false;
         }
 
-        const token = localStorage.getItem('adminToken');
-        if (token) {
-            try {
-                const data = JSON.parse(atob(token));
-                if (data.exp > Date.now()) {
-                    window.location.href='/mode/';
-                }
-            } catch(e) {}
+        // Redirect if already logged in
+        if (isAdminAuthenticated()) {
+            window.location.href='/mode/';
         }
 
-        // Reset lockout after 30 seconds
-        const attempts = parseInt(localStorage.getItem('adminLoginAttempts') || '0');
-        if (attempts >= 3) {
-            const lockTime = parseInt(localStorage.getItem('adminLockTime') || '0');
-            if (Date.now() - lockTime > 30000) {
-                localStorage.removeItem('adminLoginAttempts');
-                localStorage.removeItem('adminLockTime');
-                location.reload();
-            }
-        }
-        // Force clear on page load for testing
+        // Force clear attempts
         localStorage.removeItem('adminLoginAttempts');
         localStorage.removeItem('adminLockTime');
     </script>

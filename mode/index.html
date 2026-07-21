@@ -176,6 +176,8 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../supabase.js"></script>
     <script>
         const DEFAULT_PRODUCTS = [
     { id: 1, name: "Green Tea Skin Cream - קרם תה ירוק", category: "סרום", price: 126, oldPrice: 315, rating: 4.5, reviews: 53, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/mbn/mbn01262/r/138.jpg", badge: "60% הנחה" },
@@ -513,7 +515,6 @@
         }
 
         initProducts();
-        loadOrders();
         loadCards();
         loadProducts();
 
@@ -524,19 +525,18 @@
     </script>
     <script>
         (function() {
-            var token = localStorage.getItem('adminToken');
-            if (!token) { window.location.href='/admin-login/'; return; }
-            console.log('[SECURITY] Admin panel secured | CSP: enabled | XFO: DENY');
+            if (!isAdminAuthenticated()) { window.location.href='/admin-login/'; return; }
+            restoreAdminSession().then(function(ok) {
+                if (!ok) { window.location.href='/admin-login/'; return; }
+                console.log('[SECURITY] Admin authenticated via Supabase Auth');
+                loadOrders();
+            });
         })();
 
         function logout() {
-            localStorage.removeItem('adminToken');
-            localStorage.removeItem('adminSessionStart');
-            window.location.href='/admin-login/';
+            signOutAdmin();
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="../supabase.js"></script>
     <script src="../notify.js"></script>
     <script src="../lang.js"></script>
 </body>

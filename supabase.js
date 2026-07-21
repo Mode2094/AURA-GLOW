@@ -2,12 +2,76 @@ var SUPABASE_URL = 'https://blozysudthytzkfepgqc.supabase.co';
 var SUPABASE_ANON_KEY = 'sb_publishable_tRk0OqQQQlxCt8dlngXwfw_DtrqVaXM';
 
 var _supabase = null;
+var _adminAuthChecked = false;
+
 function getSupabase() {
   if (_supabase) return _supabase;
   if (typeof supabase !== 'undefined' && supabase.createClient) {
     _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
   return _supabase;
+}
+
+// Admin authentication
+async function signInAdmin(email, password) {
+  try {
+    var sb = getSupabase();
+    if (!sb) return { error: 'Supabase not loaded' };
+    var { data, error } = await sb.auth.signInWithPassword({ email: email, password: password });
+    if (data && data.session) {
+      localStorage.setItem('auraAdminSession', JSON.stringify(data.session));
+    }
+    return { data: data, error: error };
+  } catch (e) {
+    return { error: e.message };
+  }
+}
+
+function signOutAdmin() {
+  localStorage.removeItem('auraAdminSession');
+  localStorage.removeItem('adminToken');
+  localStorage.removeItem('adminSessionStart');
+  var sb = getSupabase();
+  if (sb) {
+    try { sb.auth.signOut(); } catch(e) {}
+  }
+  window.location.href = '/admin-login/';
+}
+
+async function restoreAdminSession() {
+  _adminAuthChecked = true;
+  try {
+    var sessionData = localStorage.getItem('auraAdminSession');
+    if (!sessionData) return false;
+    var session = JSON.parse(sessionData);
+    if (!session.access_token) {
+      localStorage.removeItem('auraAdminSession');
+      return false;
+    }
+    var sb = getSupabase();
+    if (!sb) return false;
+    var { data, error } = await sb.auth.setSession(session);
+    if (error || !data || !data.session) {
+      localStorage.removeItem('auraAdminSession');
+      return false;
+    }
+    localStorage.setItem('auraAdminSession', JSON.stringify(data.session));
+    return true;
+  } catch (e) {
+    localStorage.removeItem('auraAdminSession');
+    return false;
+  }
+}
+
+function isAdminAuthenticated() {
+  try {
+    var sessionData = localStorage.getItem('auraAdminSession');
+    if (!sessionData) return false;
+    var session = JSON.parse(sessionData);
+    return session.access_token && new Date(session.expires_at) > new Date();
+  } catch (e) {
+    return false;
+  }
 }
 
 async function saveOrderToSupabase(orderData) {
