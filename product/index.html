@@ -285,9 +285,9 @@
             if (fo) fo.textContent = currentProduct.oldPrice ? currentProduct.oldPrice + '.00 ₪' : '';
             if (fq) fq.textContent = 1;
 
-            // Update URL to show product name instead of ?id=X
+            // Canonical URL uses product id so links stay stable.
             var slug = currentProduct.name.toLowerCase().replace(/[^a-z0-9\u0590-\u05ff]+/g, '-').replace(/^-|-$/g, '');
-            try { window.history.replaceState({}, '', '/product/' + slug + '/'); } catch(e) {}
+            try { window.history.replaceState({}, '', '/product/?id=' + currentProduct.id + '&slug=' + encodeURIComponent(slug)); } catch(e) {}
 
             setTimeout(function() {
                 var fb = document.getElementById('floating-bar');

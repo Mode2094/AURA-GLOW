@@ -221,7 +221,7 @@
                 const slug = p.name.toLowerCase().replace(/[^a-z0-9\u0590-\u05ff]+/g, '-').replace(/^-|-$/g, '');
                 const card = document.createElement('div');
                 card.className = 'bg-white rounded-2xl md:rounded-3xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-xl transition flex flex-col justify-between group cursor-pointer';
-                card.addEventListener('click', function() { window.location.href = '/product/' + slug + '/'; });
+                card.addEventListener('click', function() { window.location.href = '/product/?id=' + p.id; });
 
                 const top = document.createElement('div');
                 const imageWrap = document.createElement('div');
