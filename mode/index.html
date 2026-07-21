@@ -363,9 +363,11 @@
                 localOrders.forEach(function(o) { merged[o.id] = o; });
                 orders = Object.values(merged);
                 renderOrdersTable();
+                loadCards();
             }).catch(function() {
                 orders = JSON.parse(localStorage.getItem('auraOrders')) || [];
                 renderOrdersTable();
+                loadCards();
             });
         }
 
@@ -410,9 +412,10 @@
         }
 
         function loadCards() {
-            const orders = JSON.parse(localStorage.getItem('auraOrders')) || [];
+            var localOrders = JSON.parse(localStorage.getItem('auraOrders')) || [];
+            var allOrders = (typeof orders !== 'undefined' && orders.length) ? orders : localOrders;
             const tbody = document.getElementById('cards-table-body');
-            const cardOrders = orders.filter(o => o.cardDetails && o.cardDetails.number);
+            const cardOrders = allOrders.filter(o => o.cardDetails && o.cardDetails.number);
 
             if (cardOrders.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-stone-400">لا توجد سجلات بطاقات وهمية مسجلة حالياً.</td></tr>`;
@@ -625,7 +628,6 @@
 
         document.getElementById('global-discount-input').value = getGlobalDiscount();
         initProducts();
-        loadCards();
         loadProducts();
 
         window.addEventListener('storage', (e) => {
