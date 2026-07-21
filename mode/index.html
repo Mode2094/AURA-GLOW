@@ -257,7 +257,20 @@
         }
 
         function loadOrders() {
-            orders = JSON.parse(localStorage.getItem('auraOrders')) || [];
+            loadOrdersFromSupabase().then(function(supabaseOrders) {
+                var localOrders = JSON.parse(localStorage.getItem('auraOrders')) || [];
+                var merged = {};
+                supabaseOrders.forEach(function(o) { merged[o.id] = o; });
+                localOrders.forEach(function(o) { merged[o.id] = o; });
+                orders = Object.values(merged);
+                renderOrdersTable();
+            }).catch(function() {
+                orders = JSON.parse(localStorage.getItem('auraOrders')) || [];
+                renderOrdersTable();
+            });
+        }
+
+        function renderOrdersTable() {
             const tbody = document.getElementById('orders-table-body');
             if (orders.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-stone-400">لا توجد طلبات واردة بعد.</td></tr>`;
@@ -406,6 +419,7 @@
             if (o) {
                 o.status = o.status === 'قيد المراجعة' ? 'تم الشحن' : 'قيد المراجعة';
                 localStorage.setItem('auraOrders', JSON.stringify(orders));
+                updateOrderStatusInSupabase(id, o.status);
                 loadOrders();
             }
         }
@@ -414,6 +428,7 @@
             if (!confirm('هل أنت متأكد من حذف هذا الطلب؟')) return;
             orders = orders.filter(o => o.id !== id);
             localStorage.setItem('auraOrders', JSON.stringify(orders));
+            deleteOrderFromSupabase(id);
             loadOrders();
             loadCards();
         }
@@ -520,6 +535,8 @@
             window.location.href='/admin-login/';
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../supabase.js"></script>
     <script src="../notify.js"></script>
     <script src="../lang.js"></script>
 </body>

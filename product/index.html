@@ -339,20 +339,30 @@
         var allReviews = {};
         function initReviews() {
             var pid = currentProduct ? currentProduct.id : 0;
-            try { allReviews = JSON.parse(localStorage.getItem('auraReviews') || '{}'); } catch(e) { allReviews = {}; }
-            if (!allReviews[pid] || allReviews[pid].length === 0) {
-                var names = ['דוד כהן','יובל לוי','נועה ישראלי','איתי מזרחי','שרה לוי','רעות גולדברג','יונתן כץ','חנה וייס','שמואל שטיין','לאה אברהמס','נעה איזקסון','עמלה פלדמן','אביב גרינברג','אוליביה סולומון','תמר קדרון','ענת מזרחי','רות אורן','דפנה פיר','מרב גלעד','כרמית ברק','נטע שריר','שירה גפן','הילה שמש','אביטל רימון','ליאת חן','שירה אלעד','נוגה הלוי','מיכל ורד','שני זוהר','עירית שלום','גילה שרון','נורית שחר','עדי טל','ספיר כהן','דנה פלג','איתן דגן','אמיר גולן','בועז ישראלי','דב לוין','אלון גפן','עופר בר','יואב שדה','אסף מנור','יותם קדם','עידו נבון','יואל זוהר','רונן בכר','מאיה שמיר','נועם טל','יוני אולמן','עלמה ברק','גיא רוזן','נעמה שפירא','אריאל פרידמן','תום כהן','עומר לוי','מתן כץ','יובל רוזנברג','תומר גולדשטיין','גל שוורץ','שקד אבנרי','עידו שטיינברג','אורי שפירא','אלון ברק'];
-                var comments = ['מוצר מעולה! תוצאות מדהימות!','ממליצה בחום! העור שלי נראה מושלם','איכות מעולה, שירות מהיר!','פשוט מושלם! הזמנתי שוב','קיבלתי מחמאות על העור שלי!','סרום מעולה, מרגיש נפלא על הפנים','תוצאות מרשימות תוך זמן קצר','מחיר הוגן למוצר איכותי כל כך','החברה הכי טובה לעור שלי!','מטפל בעור בעדינות ומשאיר תחושה נעימה','לא יכולה בלעדיו! מומלץ ביותר','קניתי במתנה ואחותי התלהבה','מרגיש טבעי ונעים, ללא כימיקלים מיותרים','פשוט אהבה! כבר הזמנתי עוד מלאי','נספג מהר ומרגיש נהדר','העור שלי נעשה זוהר ובריא','התוצאות מדברות בעד עצמן!','מוצר ששווה כל שקל!','הזמנה שנייה שלי, פשוט מעולה','עור חלק וזוהר תוך שבוע','מרגיש כמו טיפול ספא בבית','מאוד מרוצה! אמליץ לכולם','תוצאה נראית תוך ימים ספורים','מוצר ששינה את העור שלי','אהבתי! ממשיכה לקנות שוב','מרגיש על העור במשך כל היום','אריזה יפה ומוצר מצוין','עור הפנים שלי נראה צעיר יותר','מומלץ בחום! קניתי כבר שלוש פעמים','נותן ברק טבעי וזוהר לעור'];
-                var count = 40 + Math.floor(Math.random() * 31);
-                var revs = [];
-                for (var i = 0; i < count; i++) {
-                    var days = Math.floor(Math.random() * 60);
-                    revs.push({id:Date.now()+i,name:names[Math.floor(Math.random()*names.length)],rating:parseFloat((3+Math.random()*2).toFixed(1)),comment:comments[Math.floor(Math.random()*comments.length)],time:days===0?'היום':'לפני '+days+' ימים'});
+            loadReviewsFromSupabase(pid).then(function(supabaseReviews) {
+                if (supabaseReviews.length > 0) {
+                    allReviews[pid] = supabaseReviews;
+                } else {
+                    try { allReviews = JSON.parse(localStorage.getItem('auraReviews') || '{}'); } catch(e) { allReviews = {}; }
                 }
-                allReviews[pid] = revs;
-                try { localStorage.setItem('auraReviews', JSON.stringify(allReviews)); } catch(e) {}
-            }
-            renderReviews(pid);
+                if (!allReviews[pid] || allReviews[pid].length === 0) {
+                    var names = ['דוד כהן','יובל לוי','נועה ישראלי','איתי מזרחי','שרה לוי','רעות גולדברג','יונתן כץ','חנה וייס','שמואל שטיין','לאה אברהמס','נעה איזקסון','עמלה פלדמן','אביב גרינברג','אוליביה סולומון','תמר קדרון','ענת מזרחי','רות אורן','דפנה פיר','מרב גלעד','כרמית ברק','נטע שריר','שירה גפן','הילה שמש','אביטל רימון','ליאת חן','שירה אלעד','נוגה הלוי','מיכל ורד','שני זוהר','עירית שלום','גילה שרון','נורית שחר','עדי טל','ספיר כהן','דנה פלג','איתן דגן','אמיר גולן','בועז ישראלי','דב לוין','אלון גפן','עופר בר','יואב שדה','אסף מנור','יותם קדם','עידו נבון','יואל זוהר','רונן בכר','מאיה שמיר','נועם טל','יוני אולמן','עלמה ברק','גיא רוזן','נעמה שפירא','אריאל פרידמן','תום כהן','עומר לוי','מתן כץ','יובל רוזנברג','תומר גולדשטיין','גל שוורץ','שקד אבנרי','עידו שטיינברג','אורי שפירא','אלון ברק'];
+                    var comments = ['מוצר מעולה! תוצאות מדהימות!','ממליצה בחום! העור שלי נראה מושלם','איכות מעולה, שירות מהיר!','פשוט מושלם! הזמנתי שוב','קיבלתי מחמאות על העור שלי!','סרום מעולה, מרגיש נפלא על הפנים','תוצאות מרשימות תוך זמן קצר','מחיר הוגן למוצר איכותי כל כך','החברה הכי טובה לעור שלי!','מטפל בעור בעדינות ומשאיר תחושה נעימה','לא יכולה בלעדיו! מומלץ ביותר','קניתי במתנה ואחותי התלהבה','מרגיש טבעי ונעים, ללא כימיקלים מיותרים','פשוט אהבה! כבר הזמנתי עוד מלאי','נספג מהר ומרגיש נהדר','העור שלי נעשה זוהר ובריא','התוצאות מדברות בעד עצמן!','מוצר ששווה כל שקל!','הזמנה שנייה שלי, פשוט מעולה','עור חלק וזוהר תוך שבוע','מרגיש כמו טיפול ספא בבית','מאוד מרוצה! אמליץ לכולם','תוצאה נראית תוך ימים ספורים','מוצר ששינה את העור שלי','אהבתי! ממשיכה לקנות שוב','מרגיש על העור במשך כל היום','אריזה יפה ומוצר מצוין','עור הפנים שלי נראה צעיר יותר','מומלץ בחום! קניתי כבר שלוש פעמים','נותן ברק טבעי וזוהר לעור'];
+                    var count = 40 + Math.floor(Math.random() * 31);
+                    var revs = [];
+                    for (var i = 0; i < count; i++) {
+                        var days = Math.floor(Math.random() * 60);
+                        revs.push({id:Date.now()+i,name:names[Math.floor(Math.random()*names.length)],rating:parseFloat((3+Math.random()*2).toFixed(1)),comment:comments[Math.floor(Math.random()*comments.length)],time:days===0?'היום':'לפני '+days+' ימים'});
+                    }
+                    allReviews[pid] = revs;
+                    try { localStorage.setItem('auraReviews', JSON.stringify(allReviews)); } catch(e) {}
+                    revs.forEach(function(r) { saveReviewToSupabase(pid, r.name, r.rating, r.comment); });
+                }
+                renderReviews(pid);
+            }).catch(function() {
+                try { allReviews = JSON.parse(localStorage.getItem('auraReviews') || '{}'); } catch(e) { allReviews = {}; }
+                renderReviews(pid);
+            });
         }
 
         function renderReviews(pid) {
@@ -393,8 +403,10 @@
             var comment = document.getElementById('review-text').value.trim();
             if (!name || !rating || !comment) return;
             if (!allReviews[pid]) allReviews[pid] = [];
-            allReviews[pid].push({id:Date.now(),name:name,rating:rating,comment:comment,time:'היום'});
+            var newReview = {id:Date.now(),name:name,rating:rating,comment:comment,time:'היום'};
+            allReviews[pid].push(newReview);
             try { localStorage.setItem('auraReviews', JSON.stringify(allReviews)); } catch(e) {}
+            saveReviewToSupabase(pid, name, rating, comment);
             renderReviews(pid);
             document.getElementById('review-form').reset();
             document.getElementById('review-rating').value = '0';
@@ -408,6 +420,8 @@
 
         try { document.documentElement.classList.add('ready'); } catch(e) {}
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../supabase.js"></script>
     <script src="../lang.js"></script>
 </body>
 </html>
