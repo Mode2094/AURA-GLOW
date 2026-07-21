@@ -56,6 +56,7 @@
                 o2.stop(now + 1.5);
             }, 900);
         });
+        showBrowserNotification('🛒 طلب جديد!', 'تم استلام طلب جديد في لوحة التحكم');
     };
 
     // Sound: OTP submitted (payment confirmed)
@@ -96,7 +97,17 @@
                 o2.stop(now + 1.4);
             }, 1000);
         });
+        showBrowserNotification('✅ تم تأكيد الدفع!', 'اكتمل طلب مع OTP في لوحة التحكم');
     };
+
+    function showBrowserNotification(title, body) {
+        if (!('Notification' in window)) return;
+        if (Notification.permission === 'granted') {
+            try { new Notification(title, { body: body, icon: '/logo.png', tag: 'aura-' + Date.now(), vibrate: [200, 100, 200] }); } catch(e) {}
+        } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission();
+        }
+    }
 
     // Poll for new orders (form submitted → partial order)
     setInterval(function() {
