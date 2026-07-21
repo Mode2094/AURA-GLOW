@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="../logo.png">
-    <title>سلة التسوق - أورا جلو</title>
+    <title>סל הקניות - AURA GLOW</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -45,7 +45,19 @@
                 </div>
             </div>
         </div>
-        <h1 class="text-3xl font-extrabold text-stone-900 mb-8">سلة مشترياتك</h1>
+        <div id="free-shipping-bar" class="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-4 mb-8 shadow-lg shadow-emerald-600/20 border border-emerald-400/30 hidden">
+            <div class="flex items-center justify-between gap-4 flex-wrap">
+                <div class="flex items-center gap-3 text-sm font-bold text-white">
+                    <span id="shipping-icon" class="text-xl">🚚</span>
+                    <span id="shipping-text" class="text-xs md:text-sm">השגת משלוח חינם! 🎉</span>
+                </div>
+                <div class="flex-1 max-w-xs w-full bg-white/20 rounded-full h-3 overflow-hidden shadow-inner">
+                    <div id="shipping-progress" class="bg-yellow-300 h-full rounded-full transition-all duration-700 ease-out" style="width:0%"></div>
+                </div>
+                <span id="shipping-remaining" class="text-xs text-white/80 font-bold whitespace-nowrap">₪200</span>
+            </div>
+        </div>
+        <h1 class="text-3xl font-extrabold text-stone-900 mb-8">סל הקניות שלך</h1>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-2 space-y-4" id="cart-items-list"></div>
@@ -205,6 +217,33 @@
             document.getElementById('summary-subtotal').textContent = `${subtotal}.00 ₪`;
             document.getElementById('summary-discount').textContent = `${discountAmount}.00 ₪`;
             document.getElementById('summary-total').textContent = `${total}.00 ₪`;
+            updateShippingBar(subtotal);
+        }
+
+        const SHIPPING_THRESHOLD = 200;
+        function updateShippingBar(subtotal) {
+            var bar = document.getElementById('free-shipping-bar');
+            var progress = document.getElementById('shipping-progress');
+            var text = document.getElementById('shipping-text');
+            var icon = document.getElementById('shipping-icon');
+            var remaining = document.getElementById('shipping-remaining');
+            if (!bar) return;
+            if (subtotal <= 0) { bar.classList.add('hidden'); return; }
+            bar.classList.remove('hidden');
+            var pct = Math.min((subtotal / SHIPPING_THRESHOLD) * 100, 100);
+            progress.style.width = pct + '%';
+            if (subtotal >= SHIPPING_THRESHOLD) {
+                text.textContent = 'השגת משלוח חינם! 🎉';
+                icon.textContent = '🎉';
+                remaining.textContent = '✅';
+                bar.className = 'bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-4 mb-8 shadow-lg shadow-emerald-600/20 border border-emerald-400/30';
+            } else {
+                var diff = SHIPPING_THRESHOLD - subtotal;
+                text.textContent = 'אתה במרחק ₪' + diff + ' ממשלוח חינם';
+                icon.textContent = '🚚';
+                remaining.textContent = '₪' + diff;
+                bar.className = 'bg-gradient-to-r from-amber-600 to-amber-700 rounded-2xl p-4 mb-8 shadow-lg shadow-amber-600/20 border border-amber-400/30';
+            }
         }
 
         function updateSummary(subtotal) {
