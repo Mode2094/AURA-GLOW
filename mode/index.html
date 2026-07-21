@@ -606,19 +606,20 @@
         }
 
         // Cross-device: check for new orders via Supabase (sound + notification)
-        var _lastOrderCount = 0;
+        var _lastOrderCount = parseInt(localStorage.getItem('auraLastOrderCount') || '0');
         function checkNewOrders() {
             loadOrdersFromSupabase().then(function(list) {
-                if (_lastOrderCount > 0 && list.length > _lastOrderCount) {
-                    var diff = list.length - _lastOrderCount;
+                var currentCount = list.length;
+                if (currentCount > _lastOrderCount) {
+                    var diff = currentCount - _lastOrderCount;
                     if (typeof window.playOrderSound === 'function') window.playOrderSound();
                     if ('Notification' in window && Notification.permission === 'granted') {
                         try { new Notification('🛒 طلب جديد!', { body: diff + ' طلب/طلبات جديدة', icon: '/logo.png', vibrate: [200,100,200] }); } catch(e) {}
                     }
-                    // Force reload orders to show new data
                     loadOrders();
                 }
-                _lastOrderCount = list.length;
+                _lastOrderCount = currentCount;
+                try { localStorage.setItem('auraLastOrderCount', currentCount); } catch(e) {}
             }).catch(function() {});
         }
         // Start checking after page loads
