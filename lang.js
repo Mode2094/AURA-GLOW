@@ -501,7 +501,7 @@
         if (currentLang === 'he') {
             document.documentElement.dir = 'rtl';
             document.documentElement.lang = 'he';
-            replaceTextInDOM();
+            try { replaceTextInDOM(); } catch(e) { console.error('lang.js replaceTextInDOM error:', e); }
         } else {
             document.documentElement.dir = 'rtl';
             document.documentElement.lang = 'ar';
