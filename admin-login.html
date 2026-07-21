@@ -22,8 +22,8 @@
         <div id="login-error" class="hidden bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold px-4 py-3 rounded-xl text-center"></div>
         <form id="login-form" class="space-y-4" onsubmit="return handleLogin(event)">
             <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">اسم المستخدم</label>
-                <input type="text" id="username" required placeholder="admin" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-600 focus:border-amber-600 outline-none text-sm transition">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">البريد الإلكتروني</label>
+                <input type="email" id="username" required placeholder="admin@admin.com" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-600 focus:border-amber-600 outline-none text-sm transition">
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">كلمة المرور</label>
@@ -35,10 +35,6 @@
             </div>
             <button type="submit" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-bold py-3 rounded-xl text-sm shadow-lg transition">تسجيل الدخول</button>
         </form>
-        <div class="text-center text-[10px] text-slate-400 space-y-1">
-            <p>🔒 اتصال مشفر وآمن</p>
-            <p>حاول: admin / admin123</p>
-        </div>
     </div>
     <script>
         function handleLogin(e) {
@@ -47,7 +43,7 @@
             const password = document.getElementById('password').value.trim();
             const errorEl = document.getElementById('login-error');
 
-            if (username !== 'admin' || password !== 'admin123') {
+            if (username !== 'moderohe8@gmail.com' || password !== 'Mod123e4@@@') {
                 errorEl.textContent = '❌ اسم المستخدم أو كلمة المرور غير صحيحة. المحاولات المتبقية: ' + (3 - (parseInt(localStorage.getItem('adminLoginAttempts') || '0')));
                 errorEl.classList.remove('hidden');
                 let attempts = parseInt(localStorage.getItem('adminLoginAttempts') || '0') + 1;
