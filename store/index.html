@@ -173,8 +173,10 @@
                 grid.innerHTML = '<div class="col-span-full text-center py-12 text-stone-500">لا توجد منتجات مطابقة للبحث.</div>';
                 return;
             }
-            grid.innerHTML = list.map(p => `
-                <div class="bg-white rounded-2xl md:rounded-3xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-xl transition flex flex-col justify-between group cursor-pointer" onclick="window.location.href='/product/?id=${p.id}'">
+            grid.innerHTML = list.map(p => {
+                var slug = p.name.toLowerCase().replace(/[^a-z0-9\u0590-\u05ff]+/g, '-').replace(/^-|-$/g, '');
+                return `
+                <div class="bg-white rounded-2xl md:rounded-3xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-xl transition flex flex-col justify-between group cursor-pointer" onclick="window.location.href='/product/${slug}/'">
                     <div>
                         <div class="relative bg-stone-100 aspect-square overflow-hidden flex items-center justify-center p-4 md:p-6">
                             <img src="${p.image}" alt="${p.name}" class="w-4/5 h-4/5 object-contain transition duration-500 group-hover:scale-105">

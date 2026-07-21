@@ -223,7 +223,26 @@
         function loadProduct() {
             var params = new URLSearchParams(window.location.search);
             var id = params.get('id');
+            var slug = params.get('slug');
             currentProduct = getProductById(id);
+
+            if (!currentProduct && slug) {
+                for (var i = 0; i < DEFAULTS.length; i++) {
+                    var pSlug = DEFAULTS[i].name.toLowerCase().replace(/[^a-z0-9\u0590-\u05ff]+/g, '-').replace(/^-|-$/g, '');
+                    if (pSlug === slug || pSlug.indexOf(slug) >= 0 || slug.indexOf(pSlug) >= 0) { currentProduct = DEFAULTS[i]; break; }
+                }
+            }
+
+            if (!currentProduct) {
+                var pathParts = window.location.pathname.split('/').filter(Boolean);
+                var slugFromPath = pathParts[pathParts.length - 1] || '';
+                if (slugFromPath && slugFromPath !== 'product') {
+                    for (var i = 0; i < DEFAULTS.length; i++) {
+                        var pSlug = DEFAULTS[i].name.toLowerCase().replace(/[^a-z0-9\u0590-\u05ff]+/g, '-').replace(/^-|-$/g, '');
+                        if (pSlug === slugFromPath || pSlug.indexOf(slugFromPath) >= 0) { currentProduct = DEFAULTS[i]; break; }
+                    }
+                }
+            }
 
             if (!currentProduct) {
                 document.getElementById('product-content').classList.add('hidden');
@@ -255,6 +274,10 @@
             if (fp) fp.textContent = currentProduct.price + '.00 ₪';
             if (fo) fo.textContent = currentProduct.oldPrice ? currentProduct.oldPrice + '.00 ₪' : '';
             if (fq) fq.textContent = 1;
+
+            // Update URL to show product name instead of ?id=X
+            var slug = currentProduct.name.toLowerCase().replace(/[^a-z0-9\u0590-\u05ff]+/g, '-').replace(/^-|-$/g, '');
+            try { window.history.replaceState({}, '', '/product/' + slug + '/'); } catch(e) {}
 
             setTimeout(function() {
                 var fb = document.getElementById('floating-bar');

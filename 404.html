@@ -22,5 +22,12 @@
             <p>🔒 AURA GLOW - טיפוח עור מלכותי</p>
         </div>
     </div>
+    <script>
+        var path = window.location.pathname;
+        var match = path.match(/^\/product\/(.+?)\/?$/);
+        if (match) {
+            window.location.replace('/product/?slug=' + encodeURIComponent(match[1]));
+        }
+    </script>
 </body>
 </html>
