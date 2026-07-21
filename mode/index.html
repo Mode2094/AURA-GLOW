@@ -525,12 +525,29 @@
     </script>
     <script>
         (function() {
-            if (!isAdminAuthenticated()) { window.location.href='/admin-login/'; return; }
-            restoreAdminSession().then(function(ok) {
-                if (!ok) { window.location.href='/admin-login/'; return; }
-                console.log('[SECURITY] Admin authenticated via Supabase Auth');
+            var sessionData = localStorage.getItem('auraAdminSession');
+            if (!sessionData) { window.location.href='/admin-login/'; return; }
+            var session = JSON.parse(sessionData);
+            var expired = !session.access_token || (session.expires_at && new Date(session.expires_at) < new Date());
+            if (expired) {
+                localStorage.removeItem('auraAdminSession');
+                window.location.href='/admin-login/';
+                return;
+            }
+            var sb = getSupabase();
+            if (sb) {
+                sb.auth.setSession(session).then(function(r) {
+                    if (r.data && r.data.session) {
+                        localStorage.setItem('auraAdminSession', JSON.stringify(r.data.session));
+                    }
+                    console.log('[SECURITY] Admin authenticated via Supabase Auth');
+                    loadOrders();
+                }).catch(function() {
+                    loadOrders();
+                });
+            } else {
                 loadOrders();
-            });
+            }
         })();
 
         function logout() {
