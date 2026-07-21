@@ -140,10 +140,14 @@
         let currentCategory = 'all';
 
         function loadProducts() {
-            const version = parseInt(localStorage.getItem('auraProductsVersion') || '0');
-            if (version < PRODUCTS_VERSION || !localStorage.getItem('auraProducts')) {
-                localStorage.setItem('auraProducts', JSON.stringify(DEFAULT_PRODUCTS));
-                localStorage.setItem('auraProductsVersion', String(PRODUCTS_VERSION));
+            try {
+                const version = parseInt(localStorage.getItem('auraProductsVersion') || '0');
+                if (version < PRODUCTS_VERSION || !localStorage.getItem('auraProducts')) {
+                    localStorage.setItem('auraProducts', JSON.stringify(DEFAULT_PRODUCTS));
+                    localStorage.setItem('auraProductsVersion', String(PRODUCTS_VERSION));
+                }
+            } catch (e) {
+                console.warn('store.js localStorage unavailable, using defaults', e);
             }
             products = DEFAULT_PRODUCTS;
         }
@@ -153,9 +157,15 @@
             const labels = { all: 'الكل' };
             cats.forEach(c => { if (c !== 'all') labels[c] = c; });
             const container = document.getElementById('category-filters');
-            container.innerHTML = cats.map(c => `
-                <button onclick="filterCategory('${c}', this)" class="category-btn px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition shadow-sm ${c === 'all' ? 'bg-amber-700 text-white' : 'bg-white text-stone-600 border border-stone-200 hover:border-amber-700'}">${labels[c] || c}</button>
-            `).join('');
+            container.innerHTML = '';
+            cats.forEach(function(c) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'category-btn px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition shadow-sm ' + (c === 'all' ? 'bg-amber-700 text-white' : 'bg-white text-stone-600 border border-stone-200 hover:border-amber-700');
+                btn.textContent = labels[c] || c;
+                btn.addEventListener('click', function() { filterCategory(c, btn); });
+                container.appendChild(btn);
+            });
         }
 
         function renderProducts(list) {
@@ -164,7 +174,7 @@
                 grid.innerHTML = '<div class="col-span-full text-center py-12 text-stone-500">لا توجد منتجات مطابقة للبحث.</div>';
                 return;
             }
-            grid.innerHTML = list.map(p => {
+            /* grid.innerHTML = list.map(p => {
                 var slug = p.name.toLowerCase().replace(/[^a-z0-9\u0590-\u05ff]+/g, '-').replace(/^-|-$/g, '');
                 return `
                 <div class="bg-white rounded-2xl md:rounded-3xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-xl transition flex flex-col justify-between group cursor-pointer" onclick="window.location.href='/product/${slug}/'">
@@ -191,7 +201,97 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `).join(''); */
+        }
+
+        function renderProducts(list) {
+            const grid = document.getElementById('products-grid');
+            if (!list || list.length === 0) {
+                grid.innerHTML = '';
+                const empty = document.createElement('div');
+                empty.className = 'col-span-full text-center py-12 text-stone-500';
+                empty.textContent = 'لا توجد منتجات مطابقة للبحث.';
+                grid.appendChild(empty);
+                return;
+            }
+
+            grid.innerHTML = '';
+            const frag = document.createDocumentFragment();
+            list.forEach(function(p) {
+                const slug = p.name.toLowerCase().replace(/[^a-z0-9\u0590-\u05ff]+/g, '-').replace(/^-|-$/g, '');
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-2xl md:rounded-3xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-xl transition flex flex-col justify-between group cursor-pointer';
+                card.addEventListener('click', function() { window.location.href = '/product/' + slug + '/'; });
+
+                const top = document.createElement('div');
+                const imageWrap = document.createElement('div');
+                imageWrap.className = 'relative bg-stone-100 aspect-square overflow-hidden flex items-center justify-center p-4 md:p-6';
+                const img = document.createElement('img');
+                img.src = p.image;
+                img.alt = p.name;
+                img.className = 'w-4/5 h-4/5 object-contain transition duration-500 group-hover:scale-105';
+                const badge = document.createElement('span');
+                badge.className = 'absolute top-2 right-2 md:top-4 md:right-4 bg-amber-700 text-white text-[8px] md:text-[10px] font-bold px-1.5 py-0.5 md:px-2.5 md:py-1 rounded-full shadow';
+                badge.textContent = p.badge || 'مميز';
+                imageWrap.appendChild(img);
+                imageWrap.appendChild(badge);
+
+                const info = document.createElement('div');
+                info.className = 'p-3 md:p-6 space-y-1 md:space-y-2';
+                const rating = document.createElement('div');
+                rating.className = 'flex items-center gap-1 text-amber-500 text-[10px] md:text-xs';
+                rating.innerHTML = '<span>★</span> <span class="font-bold text-stone-700">' + (p.rating || 4.5) + '</span> <span class="text-stone-400">(' + (p.reviews || 0) + ')</span>';
+                const name = document.createElement('h3');
+                name.className = 'font-extrabold text-stone-900 text-xs md:text-base leading-snug';
+                name.textContent = p.name;
+                info.appendChild(rating);
+                info.appendChild(name);
+
+                top.appendChild(imageWrap);
+                top.appendChild(info);
+
+                const bottom = document.createElement('div');
+                bottom.className = 'p-3 md:p-6 pt-0 md:pt-0 flex items-center justify-between';
+                const priceWrap = document.createElement('div');
+                if (p.oldPrice) {
+                    const oldPrice = document.createElement('div');
+                    oldPrice.className = 'text-[10px] md:text-xs text-stone-400 line-through';
+                    oldPrice.textContent = p.oldPrice + '.00 ₪';
+                    priceWrap.appendChild(oldPrice);
+                }
+                const price = document.createElement('div');
+                price.className = 'text-sm md:text-xl font-extrabold text-amber-800';
+                price.textContent = p.price + '.00 ₪';
+                priceWrap.appendChild(price);
+
+                const actions = document.createElement('div');
+                actions.className = 'flex gap-1.5 md:gap-2';
+                const addBtn = document.createElement('button');
+                addBtn.type = 'button';
+                addBtn.className = 'bg-stone-900 hover:bg-stone-800 text-white px-2 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl text-[9px] md:text-xs font-bold shadow transition flex-1';
+                addBtn.setAttribute('data-i18n', 'add_cart');
+                addBtn.textContent = 'أضف للسلة';
+                addBtn.addEventListener('click', function(ev) { ev.stopPropagation(); addToCart(p.id); });
+
+                const buyBtn = document.createElement('button');
+                buyBtn.type = 'button';
+                buyBtn.className = 'bg-amber-700 hover:bg-amber-800 text-white px-2 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl text-[9px] md:text-xs font-bold shadow transition flex-1';
+                buyBtn.setAttribute('data-i18n', 'buy_now');
+                buyBtn.textContent = 'شراء فوري';
+                buyBtn.addEventListener('click', function(ev) { ev.stopPropagation(); buyNow(p.id); });
+
+                actions.appendChild(addBtn);
+                actions.appendChild(buyBtn);
+
+                bottom.appendChild(priceWrap);
+                bottom.appendChild(actions);
+
+                card.appendChild(top);
+                card.appendChild(bottom);
+                frag.appendChild(card);
+            });
+
+            grid.appendChild(frag);
         }
 
         function filterCategory(cat, btn) {
@@ -216,14 +316,23 @@
         function addToCart(id) {
             const product = products.find(p => p.id === id);
             if (!product) return;
-            let cart = JSON.parse(localStorage.getItem('auraCart')) || [];
+            let cart = [];
+            try {
+                cart = JSON.parse(localStorage.getItem('auraCart')) || [];
+            } catch (e) {
+                cart = [];
+            }
             const existing = cart.find(item => item.id === id);
             if (existing) {
                 existing.qty += 1;
             } else {
                 cart.push({ id: product.id, name: product.name, price: product.price, image: product.image, qty: 1 });
             }
-            localStorage.setItem('auraCart', JSON.stringify(cart));
+            try {
+                localStorage.setItem('auraCart', JSON.stringify(cart));
+            } catch (e) {
+                console.warn('store.js cart save failed', e);
+            }
             updateCartBadge();
             var btn = event && event.target;
             if (btn) { btn.textContent = '✓'; btn.classList.add('bg-emerald-600'); btn.classList.remove('bg-stone-900','hover:bg-stone-800'); setTimeout(function(){ btn.textContent = 'أضف للسلة'; btn.classList.remove('bg-emerald-600'); btn.classList.add('bg-stone-900','hover:bg-stone-800'); }, 1000); }
@@ -235,7 +344,12 @@
         }
 
         function updateCartBadge() {
-            const cart = JSON.parse(localStorage.getItem('auraCart')) || [];
+            let cart = [];
+            try {
+                cart = JSON.parse(localStorage.getItem('auraCart')) || [];
+            } catch (e) {
+                cart = [];
+            }
             const total = cart.reduce((s, i) => s + i.qty, 0);
             const badge = document.getElementById('cart-badge');
             if (badge) badge.textContent = total;
