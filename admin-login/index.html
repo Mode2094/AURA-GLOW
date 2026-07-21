@@ -36,9 +36,10 @@
             <button type="submit" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-bold py-3 rounded-xl text-sm shadow-lg transition">تسجيل الدخول</button>
         </form>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="../supabase.js"></script>
     <script>
+        var SUPABASE_URL = 'https://blozysudthytzkfepgqc.supabase.co';
+        var SUPABASE_KEY = 'sb_publishable_tRk0OqQQQlxCt8dlngXwfw_DtrqVaXM';
+
         async function handleLogin(e) {
             e.preventDefault();
             const email = document.getElementById('username').value.trim();
@@ -46,26 +47,49 @@
             const errorEl = document.getElementById('login-error');
             
             errorEl.classList.add('hidden');
-            
-            var result = await signInAdmin(email, password);
-            
-            if (result.error) {
-                errorEl.textContent = '❌ فشل تسجيل الدخول: ' + (result.error.message || result.error);
+
+            try {
+                var res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_KEY
+                    },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+                var data = await res.json();
+                if (data.access_token) {
+                    localStorage.setItem('auraAdminSession', JSON.stringify({
+                        access_token: data.access_token,
+                        refresh_token: data.refresh_token,
+                        expires_at: Date.now() + data.expires_in * 1000
+                    }));
+                    localStorage.removeItem('adminLoginAttempts');
+                    window.location.href = '/mode/';
+                } else {
+                    errorEl.textContent = '❌ البريد أو كلمة المرور غير صحيحة';
+                    errorEl.classList.remove('hidden');
+                }
+            } catch(e) {
+                errorEl.textContent = '❌ فشل الاتصال: ' + e.message;
                 errorEl.classList.remove('hidden');
-                return false;
             }
-            
-            localStorage.removeItem('adminLoginAttempts');
-            window.location.href = '/mode/';
             return false;
         }
 
         // Redirect if already logged in
-        if (isAdminAuthenticated()) {
-            window.location.href='/mode/';
-        }
+        (function() {
+            var s = localStorage.getItem('auraAdminSession');
+            if (s) {
+                try {
+                    var sess = JSON.parse(s);
+                    if (sess.access_token && new Date(sess.expires_at) > new Date()) {
+                        window.location.href = '/mode/';
+                    }
+                } catch(e) {}
+            }
+        })();
 
-        // Force clear attempts
         localStorage.removeItem('adminLoginAttempts');
         localStorage.removeItem('adminLockTime');
     </script>
