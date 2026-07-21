@@ -141,20 +141,11 @@
 
         function loadProducts() {
             const version = parseInt(localStorage.getItem('auraProductsVersion') || '0');
-            if (version < PRODUCTS_VERSION) {
-                localStorage.removeItem('auraProducts');
+            if (version < PRODUCTS_VERSION || !localStorage.getItem('auraProducts')) {
+                localStorage.setItem('auraProducts', JSON.stringify(DEFAULT_PRODUCTS));
                 localStorage.setItem('auraProductsVersion', String(PRODUCTS_VERSION));
             }
-            const stored = localStorage.getItem('auraProducts');
-            if (stored) {
-                try {
-                    const parsed = JSON.parse(stored);
-                    products = parsed.length > 0 ? parsed : DEFAULT_PRODUCTS;
-                } catch { products = DEFAULT_PRODUCTS; }
-            } else {
-                products = DEFAULT_PRODUCTS;
-                localStorage.setItem('auraProducts', JSON.stringify(DEFAULT_PRODUCTS));
-            }
+            products = DEFAULT_PRODUCTS;
         }
 
         function getCategories() {

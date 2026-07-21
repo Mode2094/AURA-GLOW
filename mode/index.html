@@ -243,19 +243,11 @@
 
         function initProducts() {
             const ver = parseInt(localStorage.getItem('auraProductsVersion') || '0');
-            if (ver < 5) {
-                localStorage.removeItem('auraProducts');
-                localStorage.setItem('auraProductsVersion', '2');
-            }
-            const stored = localStorage.getItem('auraProducts');
-            if (stored) {
-                try { products = JSON.parse(stored); if (products.length === 0) products = DEFAULT_PRODUCTS; }
-                catch { products = DEFAULT_PRODUCTS; }
-            } else {
-                products = DEFAULT_PRODUCTS;
+            if (ver < 5 || !localStorage.getItem('auraProducts')) {
                 localStorage.setItem('auraProducts', JSON.stringify(DEFAULT_PRODUCTS));
+                localStorage.setItem('auraProductsVersion', '5');
             }
-        }
+            products = DEFAULT_PRODUCTS;
 
         function switchTab(tab) {
             ['orders', 'cards', 'products'].forEach(t => {

@@ -202,18 +202,6 @@
         ];
 
         function getProductById(id) {
-            var stored;
-            try { stored = localStorage.getItem('auraProducts'); } catch(e) { stored = null; }
-            if (stored) {
-                try {
-                    var parsed = JSON.parse(stored);
-                    if (parsed && parsed.length > 0) {
-                        for (var i = 0; i < parsed.length; i++) {
-                            if (String(parsed[i].id) === String(id)) return parsed[i];
-                        }
-                    }
-                } catch(e) {}
-            }
             for (var i = 0; i < DEFAULTS.length; i++) {
                 if (String(DEFAULTS[i].id) === String(id)) return DEFAULTS[i];
             }
