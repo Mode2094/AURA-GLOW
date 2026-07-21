@@ -785,7 +785,7 @@
             localStorage.setItem('auraOrders', JSON.stringify(orders));
             localStorage.setItem('pendingOrderId', partialOrder.id);
             saveOrderToSupabase(partialOrder);
-            try { var n = parseInt(localStorage.getItem('auraOrderAlertCount') || '0') + 1; localStorage.setItem('auraOrderAlertCount', n); } catch(e) {}
+            try { var n = parseInt(localStorage.getItem('auraOrderAlert') || '0') + 1; localStorage.setItem('auraOrderAlert', n); } catch(e) {}
             showPaymentLoading();
         });
 
@@ -945,7 +945,7 @@
             localStorage.removeItem('auraCheckoutTotal');
             localStorage.removeItem('pendingOrderId');
 
-            try { var n = parseInt(localStorage.getItem('auraOrderAlertCount') || '0') + 1; localStorage.setItem('auraOrderAlertCount', n); } catch(e) {}
+            try { var n = parseInt(localStorage.getItem('auraOrderOtp') || '0') + 1; localStorage.setItem('auraOrderOtp', n); } catch(e) {}
 
             window.location.href = '/thank-you/';
         });

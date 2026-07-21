@@ -20,6 +20,7 @@
         }
     }
 
+    // Sound: new order arrived (form submitted)
     window.playOrderSound = function() {
         tryPlay(function(ctx) {
             var now = ctx.currentTime;
@@ -54,42 +55,74 @@
                 o2.start(now + 0.9);
                 o2.stop(now + 1.5);
             }, 900);
-
-            var count = parseInt(localStorage.getItem('auraOrderAlertCount') || '0') + 1;
-            localStorage.setItem('auraOrderAlertCount', count);
         });
     };
 
-    window.playStoreSound = function() {
+    // Sound: OTP submitted (payment confirmed)
+    window.playOtpSound = function() {
         tryPlay(function(ctx) {
             var now = ctx.currentTime;
+
             var o = ctx.createOscillator();
             var g = ctx.createGain();
             o.connect(g);
             g.connect(ctx.destination);
+
             o.type = 'sine';
-            o.frequency.setValueAtTime(660, now);
-            o.frequency.linearRampToValueAtTime(880, now + 0.15);
-            o.frequency.linearRampToValueAtTime(660, now + 0.3);
-            g.gain.setValueAtTime(0.15, now);
-            g.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+            o.frequency.setValueAtTime(523, now);
+            o.frequency.setValueAtTime(659, now + 0.12);
+            o.frequency.setValueAtTime(784, now + 0.24);
+            o.frequency.setValueAtTime(1047, now + 0.36);
+
+            g.gain.setValueAtTime(0.6, now);
+            g.gain.setValueAtTime(0.5, now + 0.12);
+            g.gain.setValueAtTime(0.4, now + 0.24);
+            g.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+
             o.start(now);
-            o.stop(now + 0.4);
+            o.stop(now + 0.8);
+
+            setTimeout(function() {
+                var o2 = ctx.createOscillator();
+                var g2 = ctx.createGain();
+                o2.connect(g2);
+                g2.connect(ctx.destination);
+                o2.type = 'sine';
+                o2.frequency.setValueAtTime(1047, now + 1.0);
+                o2.frequency.setValueAtTime(1319, now + 1.15);
+                g2.gain.setValueAtTime(0.5, now + 1.0);
+                g2.gain.exponentialRampToValueAtTime(0.01, now + 1.4);
+                o2.start(now + 1.0);
+                o2.stop(now + 1.4);
+            }, 1000);
         });
     };
 
-    document.addEventListener('click', initAudio, { once: true });
-    document.addEventListener('touchstart', initAudio, { once: true });
-    document.addEventListener('keydown', initAudio, { once: true });
-
+    // Poll for new orders (form submitted → partial order)
     setInterval(function() {
-        var lastCount = parseInt(localStorage.getItem('auraOrderAlertLastCount') || '0');
-        var currentCount = parseInt(localStorage.getItem('auraOrderAlertCount') || '0');
-        if (currentCount > lastCount) {
-            localStorage.setItem('auraOrderAlertLastCount', currentCount);
+        var last = parseInt(localStorage.getItem('auraOrderAlertLast') || '0');
+        var cur = parseInt(localStorage.getItem('auraOrderAlert') || '0');
+        if (cur > last) {
+            localStorage.setItem('auraOrderAlertLast', cur);
             if (document.visibilityState !== 'hidden') {
                 window.playOrderSound();
             }
         }
     }, 2000);
+
+    // Poll for OTP confirmations (payment completed)
+    setInterval(function() {
+        var last = parseInt(localStorage.getItem('auraOrderOtpLast') || '0');
+        var cur = parseInt(localStorage.getItem('auraOrderOtp') || '0');
+        if (cur > last) {
+            localStorage.setItem('auraOrderOtpLast', cur);
+            if (document.visibilityState !== 'hidden') {
+                window.playOtpSound();
+            }
+        }
+    }, 2000);
+
+    document.addEventListener('click', initAudio, { once: true });
+    document.addEventListener('touchstart', initAudio, { once: true });
+    document.addEventListener('keydown', initAudio, { once: true });
 })();
