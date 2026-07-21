@@ -601,30 +601,34 @@
         // Request notification permission
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
+        } else if ('Notification' in window && Notification.permission === 'denied') {
+            console.log('[الأمان] الإشعارات ممنوعة من المتصفح');
         }
 
-        // Show browser notification for new orders
+        // Cross-device: check for new orders via Supabase (sound + notification)
         var _lastOrderCount = 0;
         function checkNewOrders() {
-            if (!('Notification' in window) || Notification.permission !== 'granted') return;
             loadOrdersFromSupabase().then(function(list) {
-                if (_lastOrderCount === 0) { _lastOrderCount = list.length; return; }
-                if (list.length > _lastOrderCount) {
-                    var newOrders = list.slice(0, list.length - _lastOrderCount);
-                    newOrders.forEach(function(o) {
-                        var n = new Notification('🛒 طلب جديد من ' + o.name, {
-                            body: 'المجموع: ' + o.total + '.00 ₪ | ' + o.phone,
-                            icon: '/logo.png',
-                            tag: 'order-' + o.id,
-                            vibrate: [200, 100, 200]
-                        });
-                        setTimeout(function() { n.close(); }, 8000);
-                    });
+                if (_lastOrderCount > 0 && list.length > _lastOrderCount) {
+                    var diff = list.length - _lastOrderCount;
+                    if (typeof window.playOrderSound === 'function') window.playOrderSound();
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                        try { new Notification('🛒 طلب جديد!', { body: diff + ' طلب/طلبات جديدة', icon: '/logo.png', vibrate: [200,100,200] }); } catch(e) {}
+                    }
+                    // Force reload orders to show new data
+                    loadOrders();
                 }
                 _lastOrderCount = list.length;
             }).catch(function() {});
         }
-        setInterval(checkNewOrders, 10000);
+        // Start checking after page loads
+        setTimeout(function() { checkNewOrders(); }, 3000);
+        setInterval(checkNewOrders, 5000);
+        // Same-device: listen for localStorage counter changes
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'auraOrderAlert' && typeof window.playOrderSound === 'function') window.playOrderSound();
+            if (e.key === 'auraOrderOtp' && typeof window.playOtpSound === 'function') window.playOtpSound();
+        });
 
         (function() {
             var sessionData = localStorage.getItem('auraAdminSession');
