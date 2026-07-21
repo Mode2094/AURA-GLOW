@@ -15,6 +15,31 @@
 </head>
 <body class="bg-stone-50 text-stone-800 antialiased selection:bg-amber-100 selection:text-amber-900">
 
+    <div class="bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 text-white text-center text-[10px] md:text-xs font-bold py-1.5 md:py-2 tracking-wide overflow-hidden relative">
+        <div class="animate-marquee whitespace-nowrap flex items-center justify-center gap-2">
+            <span>🚚</span>
+            <span>משלוח חינם!</span>
+            <span class="mx-4">•</span>
+            <span>🚚</span>
+            <span>משלוח חינם!</span>
+            <span class="mx-4">•</span>
+            <span>🚚</span>
+            <span>משלוח חינם!</span>
+            <span class="mx-4">•</span>
+            <span>🚚</span>
+            <span>משלוח חינם!</span>
+        </div>
+    </div>
+    <style>
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+            animation: marquee 15s linear infinite;
+        }
+    </style>
+
     <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-stone-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
