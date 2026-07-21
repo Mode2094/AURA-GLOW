@@ -6,7 +6,7 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' https: data:; connect-src 'self' https:; form-action 'self' https:">
-    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="icon" type="image/png" href="../logo.png">
     <title>تسجيل الدخول - لوحة التحكم</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -15,7 +15,7 @@
 <body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
     <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl border border-slate-200 p-8 space-y-6">
         <div class="text-center">
-            <img src="logo.png" alt="AURA GLOW" class="h-16 mx-auto mb-4">
+            <img src="../logo.png" alt="AURA GLOW" class="h-16 mx-auto mb-4">
             <h1 class="text-2xl font-extrabold text-slate-900">لوحة التحكم الإدارية</h1>
             <p class="text-xs text-slate-500 mt-1">الرجاء إدخال بيانات الدخول للمتابعة</p>
         </div>
@@ -66,7 +66,7 @@
             localStorage.setItem('adminToken', token);
             localStorage.setItem('adminLoginAttempts', '0');
             localStorage.setItem('adminSessionStart', Date.now());
-            window.location.href = 'admin.html';
+            window.location.href = 'admin/';
             return false;
         }
 
@@ -75,7 +75,7 @@
             try {
                 const data = JSON.parse(atob(token));
                 if (data.exp > Date.now()) {
-                    window.location.href = 'admin.html';
+                    window.location.href = 'admin/';
                 }
             } catch(e) {}
         }
@@ -94,6 +94,6 @@
         localStorage.removeItem('adminLoginAttempts');
         localStorage.removeItem('adminLockTime');
     </script>
-    <script src="lang.js"></script>
+    <script src="../lang.js"></script>
 </body>
 </html>
