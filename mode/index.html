@@ -534,7 +534,10 @@
         })();
 
         function logout() {
-            signOutAdmin();
+            localStorage.removeItem('auraAdminSession');
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminSessionStart');
+            window.location.href = '/admin-login/';
         }
     </script>
     <script src="../notify.js"></script>
