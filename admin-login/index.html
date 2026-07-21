@@ -49,13 +49,14 @@
             errorEl.classList.add('hidden');
 
             try {
-                var res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+                    var res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'apikey': SUPABASE_KEY
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_KEY
                     },
-                    body: JSON.stringify({ email: email, password: password })
+                    body: JSON.stringify({ email: email, password: password, gotrue_meta_security: {} })
                 });
                 var data = await res.json();
                 if (data.access_token) {
