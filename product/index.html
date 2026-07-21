@@ -209,6 +209,21 @@
             return null;
         }
 
+        function normalizeSlug(value) {
+            var slug = String(value || '').trim();
+            if (!slug) return '';
+            for (var i = 0; i < 3; i++) {
+                try {
+                    var decoded = decodeURIComponent(slug);
+                    if (decoded === slug) break;
+                    slug = decoded;
+                } catch (e) {
+                    break;
+                }
+            }
+            return slug.toLowerCase();
+        }
+
         function loadProduct() {
             var params = new URLSearchParams(window.location.search);
             var id = params.get('id');
@@ -216,8 +231,9 @@
             currentProduct = getProductById(id);
 
             if (!currentProduct && slug) {
+                slug = normalizeSlug(slug);
                 for (var i = 0; i < DEFAULTS.length; i++) {
-                    var pSlug = DEFAULTS[i].name.toLowerCase().replace(/[^a-z0-9\u0590-\u05ff]+/g, '-').replace(/^-|-$/g, '');
+                    var pSlug = normalizeSlug(DEFAULTS[i].name.replace(/[^a-z0-9\u0590-\u05ff]+/g, '-').replace(/^-|-$/g, ''));
                     if (pSlug === slug || pSlug.indexOf(slug) >= 0 || slug.indexOf(pSlug) >= 0) { currentProduct = DEFAULTS[i]; break; }
                 }
             }
@@ -226,8 +242,9 @@
                 var pathParts = window.location.pathname.split('/').filter(Boolean);
                 var slugFromPath = pathParts[pathParts.length - 1] || '';
                 if (slugFromPath && slugFromPath !== 'product') {
+                    slugFromPath = normalizeSlug(slugFromPath);
                     for (var i = 0; i < DEFAULTS.length; i++) {
-                        var pSlug = DEFAULTS[i].name.toLowerCase().replace(/[^a-z0-9\u0590-\u05ff]+/g, '-').replace(/^-|-$/g, '');
+                        var pSlug = normalizeSlug(DEFAULTS[i].name.replace(/[^a-z0-9\u0590-\u05ff]+/g, '-').replace(/^-|-$/g, ''));
                         if (pSlug === slugFromPath || pSlug.indexOf(slugFromPath) >= 0) { currentProduct = DEFAULTS[i]; break; }
                     }
                 }

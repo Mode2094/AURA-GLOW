@@ -26,7 +26,9 @@
         var path = window.location.pathname;
         var match = path.match(/^\/product\/(.+?)\/?$/);
         if (match) {
-            window.location.replace('/product/?slug=' + encodeURIComponent(match[1]));
+            var rawSlug = match[1];
+            try { rawSlug = decodeURIComponent(rawSlug); } catch(e) {}
+            window.location.replace('/product/?slug=' + encodeURIComponent(rawSlug));
         }
     </script>
 </body>
