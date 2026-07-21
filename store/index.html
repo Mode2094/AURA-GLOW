@@ -233,6 +233,10 @@
                 const badge = document.createElement('span');
                 badge.className = 'absolute top-2 right-2 md:top-4 md:right-4 bg-amber-700 text-white text-[8px] md:text-[10px] font-bold px-1.5 py-0.5 md:px-2.5 md:py-1 rounded-full shadow';
                 badge.textContent = p.badge || 'مميز';
+                if (p.oldPrice) {
+                    var discount = parseInt(localStorage.getItem('auraGlobalDiscount') || '60');
+                    badge.textContent = discount + '% הנחה';
+                }
                 imageWrap.appendChild(img);
                 imageWrap.appendChild(badge);
 
@@ -253,15 +257,19 @@
                 const bottom = document.createElement('div');
                 bottom.className = 'p-3 md:p-6 pt-0 md:pt-0 flex items-center justify-between';
                 const priceWrap = document.createElement('div');
+                const price = document.createElement('div');
+                price.className = 'text-sm md:text-xl font-extrabold text-amber-800';
                 if (p.oldPrice) {
+                    var discount = parseInt(localStorage.getItem('auraGlobalDiscount') || '60');
+                    var salePrice = Math.round(p.oldPrice * (100 - discount) / 100);
                     const oldPrice = document.createElement('div');
                     oldPrice.className = 'text-[10px] md:text-xs text-stone-400 line-through';
                     oldPrice.textContent = p.oldPrice + '.00 ₪';
                     priceWrap.appendChild(oldPrice);
+                    price.textContent = salePrice + '.00 ₪';
+                } else {
+                    price.textContent = p.price + '.00 ₪';
                 }
-                const price = document.createElement('div');
-                price.className = 'text-sm md:text-xl font-extrabold text-amber-800';
-                price.textContent = p.price + '.00 ₪';
                 priceWrap.appendChild(price);
 
                 const actions = document.createElement('div');
@@ -326,7 +334,9 @@
             if (existing) {
                 existing.qty += 1;
             } else {
-                cart.push({ id: product.id, name: product.name, price: product.price, image: product.image, qty: 1 });
+                var discount = parseInt(localStorage.getItem('auraGlobalDiscount') || '60');
+                var cartPrice = product.oldPrice ? Math.round(product.oldPrice * (100 - discount) / 100) : product.price;
+                cart.push({ id: product.id, name: product.name, price: cartPrice, image: product.image, qty: 1 });
             }
             try {
                 localStorage.setItem('auraCart', JSON.stringify(cart));
