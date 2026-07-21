@@ -371,6 +371,7 @@
         }
 
         loadProduct();
+        initReviews();
         try { document.getElementById('cart-badge').textContent = JSON.parse(localStorage.getItem('auraCart')||'[]').reduce(function(s,i){return s+i.qty;},0); } catch(e) {}
 
         document.querySelectorAll('#star-rating .star').forEach(function(s) {
