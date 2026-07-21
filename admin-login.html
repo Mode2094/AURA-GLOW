@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' https: data:; connect-src 'self' https:; form-action 'self' https:">
+    <link rel="icon" type="image/png" href="logo.png">
+    <title>تسجيل الدخول - لوحة التحكم</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>body{font-family:'Cairo',sans-serif}</style>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl border border-slate-200 p-8 space-y-6">
+        <div class="text-center">
+            <img src="logo.png" alt="AURA GLOW" class="h-16 mx-auto mb-4">
+            <h1 class="text-2xl font-extrabold text-slate-900">لوحة التحكم الإدارية</h1>
+            <p class="text-xs text-slate-500 mt-1">الرجاء إدخال بيانات الدخول للمتابعة</p>
+        </div>
+        <div id="login-error" class="hidden bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold px-4 py-3 rounded-xl text-center"></div>
+        <form id="login-form" class="space-y-4" onsubmit="return handleLogin(event)">
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">اسم المستخدم</label>
+                <input type="text" id="username" required placeholder="admin" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-600 focus:border-amber-600 outline-none text-sm transition">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">كلمة المرور</label>
+                <input type="password" id="password" required placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-600 focus:border-amber-600 outline-none text-sm transition">
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+                <input type="checkbox" id="remember">
+                <label for="remember">تذكرني</label>
+            </div>
+            <button type="submit" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-bold py-3 rounded-xl text-sm shadow-lg transition">تسجيل الدخول</button>
+        </form>
+        <div class="text-center text-[10px] text-slate-400 space-y-1">
+            <p>🔒 اتصال مشفر وآمن</p>
+            <p>حاول: admin / admin123</p>
+        </div>
+    </div>
+    <script>
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorEl = document.getElementById('login-error');
+
+            if (username !== 'admin' || password !== 'admin123') {
+                errorEl.textContent = '❌ اسم المستخدم أو كلمة المرور غير صحيحة. المحاولات المتبقية: ' + (3 - (parseInt(localStorage.getItem('adminLoginAttempts') || '0')));
+                errorEl.classList.remove('hidden');
+                let attempts = parseInt(localStorage.getItem('adminLoginAttempts') || '0') + 1;
+                localStorage.setItem('adminLoginAttempts', attempts);
+                if (attempts >= 3) {
+                    localStorage.setItem('adminLockTime', Date.now());
+                    errorEl.textContent = '❌ تم تجاوز عدد المحاولات المسموح. الرجاء المحاولة بعد 30 ثانية.';
+                    document.getElementById('username').disabled = true;
+                    document.getElementById('password').disabled = true;
+                    document.querySelector('button[type=submit]').disabled = true;
+                    setTimeout(function() { 
+                        localStorage.setItem('adminLoginAttempts', '0');
+                        location.reload();
+                    }, 30000);
+                }
+                return false;
+            }
+
+            const token = btoa(JSON.stringify({ user: username, time: Date.now(), exp: Date.now() + 3600000 }));
+            localStorage.setItem('adminToken', token);
+            localStorage.setItem('adminLoginAttempts', '0');
+            localStorage.setItem('adminSessionStart', Date.now());
+            window.location.href = 'admin.html';
+            return false;
+        }
+
+        const token = localStorage.getItem('adminToken');
+        if (token) {
+            try {
+                const data = JSON.parse(atob(token));
+                if (data.exp > Date.now()) {
+                    window.location.href = 'admin.html';
+                }
+            } catch(e) {}
+        }
+
+        // Reset lockout after 30 seconds
+        const attempts = parseInt(localStorage.getItem('adminLoginAttempts') || '0');
+        if (attempts >= 3) {
+            const lockTime = parseInt(localStorage.getItem('adminLockTime') || '0');
+            if (Date.now() - lockTime > 30000) {
+                localStorage.removeItem('adminLoginAttempts');
+                localStorage.removeItem('adminLockTime');
+                location.reload();
+            }
+        }
+        // Force clear on page load for testing
+        localStorage.removeItem('adminLoginAttempts');
+        localStorage.removeItem('adminLockTime');
+    </script>
+    <script src="lang.js"></script>
+</body>
+</html>

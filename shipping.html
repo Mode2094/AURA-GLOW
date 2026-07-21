@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' https: data:; connect-src 'self' https:; form-action 'self' https:">
+    <link rel="icon" type="image/png" href="logo.png">
+    <title>سياسة الشحن والتوصيل - أورا جلو</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>body{font-family:'Cairo',sans-serif}</style>
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased">
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <a href="store.html" class="flex items-center gap-2"><img src="logo.png" alt="AURA GLOW" class="h-24 md:h-32 mx-auto"></a>
+            <div class="flex items-center gap-4 text-sm">
+                <button onclick="var l=localStorage.getItem('auraLang')||'he';setLang(l==='he'?'ar':'he');" class="text-xs font-bold text-stone-500 hover:text-amber-700 transition border border-stone-300 rounded-full px-2.5 py-1" id="lang-toggle">HE</button>
+                <a href="store.html" class="text-xs text-stone-500 hover:text-stone-700 transition font-medium">الرئيسية</a>
+                <a href="cart.html" class="text-xs text-stone-500 hover:text-stone-700 transition font-medium">السلة</a>
+                <a href="about.html" class="text-xs text-stone-500 hover:text-stone-700 transition font-medium">من نحن</a>
+            </div>
+        </div>
+    </header>
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 class="text-3xl font-extrabold text-stone-900 mb-6" data-i18n="shipping_h1">سياسة الشحن والتوصيل</h1>
+        <div class="bg-white rounded-3xl p-8 border border-stone-200 space-y-4 text-sm leading-relaxed text-stone-700">
+            <h3 class="font-bold text-stone-900 text-base" data-i18n="shipping_h3_1">مدة التوصيل</h3>
+            <ul class="list-disc list-inside space-y-1 pr-4">
+                <li><strong data-i18n="shipping_li1_t">الرياض:</strong> <span data-i18n="shipping_li1_d">1-2 يوم عمل</span></li>
+                <li><strong data-i18n="shipping_li2_t">المدن الرئيسية:</strong> <span data-i18n="shipping_li2_d">2-4 أيام عمل</span></li>
+                <li><strong data-i18n="shipping_li3_t">المناطق النائية:</strong> <span data-i18n="shipping_li3_d">4-7 أيام عمل</span></li>
+            </ul>
+            <h3 class="font-bold text-stone-900 text-base" data-i18n="shipping_h3_2">رسوم الشحن</h3>
+            <p data-i18n="shipping_p1">الشحن <strong>مجاني</strong> للطلبات التي تزيد عن 200 شيكل. للطلبات الأقل من 200 شيكل، رسوم الشحن 25 شيكلاً.</p>
+            <h3 class="font-bold text-stone-900 text-base" data-i18n="shipping_h3_3">تتبع الطلب</h3>
+            <p data-i18n="shipping_p2">سيتم تزويدك برقم تتبع عبر البريد الإلكتروني أو رسالة نصية بعد شحن طلبك.</p>
+            <h3 class="font-bold text-stone-900 text-base" data-i18n="shipping_h3_4">الشحن الدولي</h3>
+            <p data-i18n="shipping_p3">نوفر الشحن لجميع دول مجلس التعاون الخليجي. تختلف رسوم الشحن حسب الوجهة ويتم حسابها عند إتمام الطلب.</p>
+            <p class="text-xs text-stone-400 mt-4" data-i18n="shipping_update">آخر تحديث: يوليو 2026</p>
+        </div>
+    </main>
+    <footer class="bg-stone-900 text-stone-400 py-12 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
+            <span class="text-xl font-bold text-white tracking-wider">AURA GLOW</span>
+            <p class="text-xs text-stone-500" data-i18n="footer_tag">متجرك الأول للعناية الملكية بالبشرة والجمال الطبيعي © 2026</p>
+        </div>
+    </footer>
+<script src="lang.js"></script>
+</body>
+</html>

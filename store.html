@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="logo.png">
+    <title>أورا جلو - متجر العناية بالبشرة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased selection:bg-amber-100 selection:text-amber-900">
+
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <a href="store.html" class="flex items-center gap-2"><img src="logo.png" alt="AURA GLOW" class="h-24 md:h-32 mx-auto"></a>
+            </div>
+            <div class="hidden md:flex flex-1 max-w-md mx-6">
+                <div class="relative w-full">
+                    <input type="text" id="search-input" oninput="filterProducts()" placeholder="ابحث عن منتج، سيروم، كريم..."
+                        class="w-full bg-stone-100 border border-stone-200 rounded-full px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-600 transition">
+                    <span class="absolute right-3.5 top-3 text-stone-400 text-sm">🔍</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="about.html" class="text-xs text-stone-500 hover:text-stone-700 transition hidden sm:inline font-medium">من نحن</a>
+                <a href="cart.html" class="relative bg-amber-50 hover:bg-amber-100 text-amber-800 p-2.5 rounded-full transition flex items-center gap-2 px-4 border border-amber-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    <span class="text-xs font-bold hidden sm:inline">السلة</span>
+                    <span id="cart-badge" class="absolute -top-1 -right-1 bg-amber-700 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold shadow">0</span>
+                </a>
+                </div>
+        </div>
+    </header>
+
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
+        <div class="relative bg-gradient-to-l from-amber-900 to-stone-900 rounded-3xl overflow-hidden text-white shadow-2xl min-h-[200px] md:min-h-[420px] grid grid-cols-2 md:grid-cols-2">
+            <div class="absolute -left-10 -bottom-10 w-80 h-80 bg-amber-600/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="p-4 md:p-16 flex flex-col justify-center space-y-2 md:space-y-4 relative z-10">
+                <span class="bg-red-600/90 backdrop-blur text-white text-[10px] md:text-xs font-bold px-2.5 py-1 md:px-3 md:py-1.5 rounded-full animate-pulse self-start" data-i18n="hero_badge">🔥 خصم العروض الكبرى 60%</span>
+                <h1 class="text-sm md:text-5xl font-extrabold leading-tight" data-i18n="hero_title">اكتشفي سر الإشراقة الملكية لبشرتك</h1>
+                <p class="text-stone-300 text-[10px] md:text-base leading-relaxed" data-i18n="hero_desc">خصم 60% على جميع المنتجات لفترة محدودة! تركيبات طبيعية 100% تجمع بين أحدث ابتكارات العناية بالبشرة ومستخلصات الطبيعة النقية.</p>
+                <div class="pt-1 md:pt-2">
+                    <a href="#shop-section" class="inline-block bg-white hover:bg-stone-100 text-stone-900 px-3 py-1.5 md:px-8 md:py-3.5 rounded-full font-bold text-[9px] md:text-sm shadow-lg transition" data-i18n="hero_btn">تصفح المنتجات الآن</a>
+                </div>
+            </div>
+            <div class="relative z-10 flex items-center justify-center p-4 md:p-8">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFz5coF-QtU4kHffv7rRfA_4Gverg4rk-TlXZaMMf5bA&s=10" alt="سيروم طبيعي" class="rounded-xl md:rounded-3xl w-full max-w-[140px] md:max-w-none md:w-full h-auto md:h-80 object-cover shadow-2xl border-2 border-white/10">
+            </div>
+        </div>
+    </section>
+
+    <main id="shop-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-8 scrollbar-none" id="category-filters"></div>
+        <div id="products-grid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8"></div>
+    </main>
+
+    <footer class="bg-stone-900 text-stone-400 py-12 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap justify-center gap-6 mb-6 text-xs">
+                <a href="privacy.html" class="hover:text-white transition">سياسة الخصوصية</a>
+                <a href="terms.html" class="hover:text-white transition">الشروط والأحكام</a>
+                <a href="returns.html" class="hover:text-white transition">الإرجاع والاستبدال</a>
+                <a href="shipping.html" class="hover:text-white transition">الشحن والتوصيل</a>
+                <a href="about.html" class="hover:text-white transition">من نحن</a>
+            </div>
+            <div class="text-center space-y-4 border-t border-stone-800 pt-6">
+                <span class="text-xl font-bold text-white tracking-wider">AURA GLOW</span>
+                <p class="text-xs text-stone-500" data-i18n="footer_tag">متجرك الأول للعناية الملكية بالبشرة والجمال الطبيعي © 2026</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const DEFAULT_PRODUCTS = [
+    { id: 1, name: "Green Tea Skin Cream - קרם תה ירוק", category: "סרום", price: 126, oldPrice: 315, rating: 4.5, reviews: 2500, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/mbn/mbn01262/r/138.jpg", badge: "60% הנחה" },
+    { id: 2, name: "Organic Jojoba Oil - שמן חוחובה אורגני", category: "שמן", price: 142, oldPrice: 355, rating: 4.6, reviews: 2850, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/clg/clg00703/r/86.jpg", badge: "60% הנחה" },
+    { id: 3, name: "Glycolic + Lactic Acid Serum - סרום פילינג", category: "סרום", price: 106, oldPrice: 265, rating: 4.7, reviews: 3200, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03341/r/67.jpg", badge: "60% הנחה" },
+    { id: 4, name: "Vegan Collagen Eye Serum - סרום עיניים קולגן", category: "טיפוח", price: 189, oldPrice: 472, rating: 4.8, reviews: 3550, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/axi/axi61088/r/17.jpg", badge: "60% הנחה" },
+    { id: 5, name: "Overnight Spot Patches - מדבקות אקנה", category: "מסכה", price: 112, oldPrice: 280, rating: 4.9, reviews: 3900, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl26040/r/72.jpg", badge: "60% הנחה" },
+    { id: 6, name: "First Spray Serum - סרום ספריי ראשון", category: "סרום", price: 249, oldPrice: 623, rating: 4.5, reviews: 4250, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/dab/dab06875/r/39.jpg", badge: "60% הנחה" },
+    { id: 7, name: "Glow Filter Illuminating Serum - סרום זוהר מבהיר", category: "סרום", price: 259, oldPrice: 647, rating: 4.6, reviews: 4600, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/eqq/eqq45647/r/37.jpg", badge: "60% הנחה" },
+    { id: 8, name: "Leave-In Conditioner - מרכך שיער מזין", category: "קרם", price: 162, oldPrice: 405, rating: 4.7, reviews: 4950, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/smt/smt21584/r/53.jpg", badge: "60% הנחה" },
+    { id: 9, name: "Collagen Serum - סרום קולגן", category: "סרום", price: 106, oldPrice: 265, rating: 4.8, reviews: 5300, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00800/r/77.jpg", badge: "60% הנחה" },
+    { id: 10, name: "Acne Treatment Ointment - משחת אקנה", category: "מסכה", price: 75, oldPrice: 187, rating: 4.9, reviews: 5650, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/dlc/dlc15042/r/49.jpg", badge: "60% הנחה" },
+    { id: 11, name: "Acne Pads - פדים נגד אקנה", category: "קרם", price: 55, oldPrice: 137, rating: 4.5, reviews: 6000, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/sdx/sdx09701/r/89.jpg", badge: "60% הנחה" },
+    { id: 12, name: "Organic Pumpkin Seed Oil - שמן זרעי דלעת", category: "שמן", price: 132, oldPrice: 330, rating: 4.6, reviews: 6350, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/clg/clg56086/r/75.jpg", badge: "60% הנחה" },
+    { id: 13, name: "Clarifying Exfoliant - תמיסת פילינג חומצה סליצילית", category: "סרום", price: 54, oldPrice: 135, rating: 4.0, reviews: 2500, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl29604/r/54.jpg", badge: "60% הנחה" },
+    { id: 14, name: "Vitamin C Serum - סרום ויטמין C מבהיר", category: "קרם", price: 94, oldPrice: 235, rating: 4.1, reviews: 2620, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/mhs/mhs12742/r/77.jpg", badge: "60% הנחה" },
+    { id: 15, name: "Glycolic + Lactic Acid Serum - סרום פילינג חומצות", category: "מסכה", price: 38, oldPrice: 95, rating: 4.2, reviews: 2740, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03341/r/67.jpg", badge: "60% הנחה" },
+    { id: 16, name: "Skin Success Bar - סבון מבהיר כתמים", category: "טיפוח", price: 13, oldPrice: 32, rating: 4.3, reviews: 2860, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pal/pal07380/r/52.jpg", badge: "60% הנחה" },
+    { id: 17, name: "Overnight Spot Patches - מדבקות אקנה לילה", category: "סרום", price: 41, oldPrice: 102, rating: 4.4, reviews: 2980, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl26040/r/72.jpg", badge: "60% הנחה" },
+    { id: 18, name: "First Spray Serum - סרום ספריי כמהין", category: "סרום", price: 90, oldPrice: 225, rating: 4.5, reviews: 3100, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/dab/dab06875/r/39.jpg", badge: "60% הנחה" },
+    { id: 19, name: "Glow Filter Serum - סרום מבהיר ויטמין C", category: "סרום", price: 95, oldPrice: 238, rating: 4.6, reviews: 3220, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/eqq/eqq45647/r/37.jpg", badge: "60% הנחה" },
+    { id: 20, name: "Collagen Serum - סרום קולגן מחייה", category: "סרום", price: 38, oldPrice: 95, rating: 4.7, reviews: 3340, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00800/r/77.jpg", badge: "60% הנחה" },
+    { id: 21, name: "Sulfur Ointment - משחת אקנה 10% גופרית", category: "מסכה", price: 27, oldPrice: 68, rating: 4.8, reviews: 3460, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/dlc/dlc15042/r/49.jpg", badge: "60% הנחה" },
+    { id: 22, name: "Acne Pads 55 - פדים נגד אקנה", category: "קרם", price: 20, oldPrice: 50, rating: 4.9, reviews: 3580, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/sdx/sdx09701/r/89.jpg", badge: "60% הנחה" },
+    { id: 23, name: "Vitamin C 20% Serum - סרום ויטמין C 20%", category: "סרום", price: 123, oldPrice: 308, rating: 4.0, reviews: 3700, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/tml/tml00472/r/17.jpg", badge: "60% הנחה" },
+    { id: 24, name: "Centella Ampoule - אמפולת סנטלה מרגיעה", category: "סרום", price: 59, oldPrice: 148, rating: 4.1, reviews: 3820, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/sio/sio26060/r/57.jpg", badge: "60% הנחה" },
+    { id: 25, name: "Retinol Shot - סרום רטינול מתיחה", category: "סרום", price: 59, oldPrice: 148, rating: 4.2, reviews: 3940, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/clx/clx32080/r/21.jpg", badge: "60% הנחה" },
+    { id: 26, name: "Vitamin C Serum 4oz - סרום ויטמין C", category: "סרום", price: 58, oldPrice: 145, rating: 4.3, reviews: 4060, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pud/pud00608/r/88.jpg", badge: "60% הנחה" },
+    { id: 27, name: "Dark Circle Serum - סרום עיניים נגד עיגולים", category: "סרום", price: 41, oldPrice: 102, rating: 4.4, reviews: 4180, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03468/r/69.jpg", badge: "60% הנחה" },
+    { id: 28, name: "Acne Foaming Wash - תמיסת ניקוי אקנה", category: "קרם", price: 14, oldPrice: 35, rating: 4.5, reviews: 4300, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl22801/r/44.jpg", badge: "60% הנחה" },
+    { id: 29, name: "5-in-1 Eye Serum - סרום עיניים 5 ב-1", category: "סרום", price: 36, oldPrice: 90, rating: 4.6, reviews: 4420, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00977/r/84.jpg", badge: "60% הנחה" },
+    { id: 30, name: "Azelaic Acid Serum - סרום מרגיע אדמומיות", category: "סרום", price: 91, oldPrice: 228, rating: 4.7, reviews: 4540, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/auu/auu73719/r/17.jpg", badge: "60% הנחה" },
+    { id: 31, name: "Puffy Eye Serum - סרום עיניים נגד נפיחות", category: "סרום", price: 41, oldPrice: 102, rating: 4.8, reviews: 4660, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03469/r/50.jpg", badge: "60% הנחה" },
+    { id: 32, name: "Adapalene Gel - ג'ל אדפלן לאקנה", category: "קרם", price: 53, oldPrice: 132, rating: 4.9, reviews: 4780, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/acf/acf23456/r/38.jpg", badge: "60% הנחה" },
+    { id: 33, name: "Niacinamide 10 Serum - סרום מבהיר ניאצינמיד", category: "סרום", price: 100, oldPrice: 250, rating: 4.0, reviews: 4900, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/auu/auu73452/r/57.jpg", badge: "60% הנחה" },
+    { id: 34, name: "Snail Mucin Essence - תמצית שבלול 96%", category: "סרום", price: 61, oldPrice: 152, rating: 4.1, reviews: 5020, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/crx/crx47000/r/39.jpg", badge: "60% הנחה" },
+    { id: 35, name: "Propolis Glow Serum - סרום זוהר פרופוליס", category: "סרום", price: 72, oldPrice: 180, rating: 4.2, reviews: 5140, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/boj/boj11496/r/38.jpg", badge: "60% הנחה" },
+    { id: 36, name: "Dark Spot Serum - סרום מבהיר כתמים", category: "סרום", price: 72, oldPrice: 180, rating: 4.3, reviews: 5260, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/axi/axi61003/r/39.jpg", badge: "60% הנחה" },
+    { id: 37, name: "Sulfur Mini - משחת אקנה גופרית מיני", category: "מסכה", price: 8, oldPrice: 20, rating: 4.4, reviews: 5380, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/dlc/dlc15048/r/111.jpg", badge: "60% הנחה" },
+    { id: 38, name: "Clear Spot Patch - מדבקות פצעונים שקופות", category: "מסכה", price: 14, oldPrice: 35, rating: 4.5, reviews: 5500, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/smi/smi39001/r/14.jpg", badge: "60% הנחה" },
+    { id: 39, name: "Acne Creamy Wash - תמיסת ניקוי אקנה עדינה", category: "קרם", price: 52, oldPrice: 130, rating: 4.6, reviews: 5620, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl22706/r/79.jpg", badge: "60% הנחה" },
+    { id: 40, name: "PDRN Pink Serum - סרום פפטידים ורוד", category: "סרום", price: 73, oldPrice: 182, rating: 4.7, reviews: 5740, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/mcb/mcb10805/r/17.jpg", badge: "60% הנחה" },
+    { id: 41, name: "Niacinamide 5 Serum - סרום ניאצינמיד 5%", category: "סרום", price: 41, oldPrice: 102, rating: 4.8, reviews: 5860, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03480/r/71.jpg", badge: "60% הנחה" },
+    { id: 42, name: "Pore Reducing Serum - סרום מכווץ נקבוביות", category: "סרום", price: 58, oldPrice: 145, rating: 4.9, reviews: 5980, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/fky/fky60522/r/17.jpg", badge: "60% הנחה" },
+    { id: 43, name: "Ginseng Eye Serum - סרום עיניים ג'ינסנג", category: "סרום", price: 63, oldPrice: 158, rating: 4.0, reviews: 6100, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/boj/boj31614/r/81.jpg", badge: "60% הנחה" },
+    { id: 44, name: "Acne Pads 90 - פדים נגד אקנה 90 יחידות", category: "קרם", price: 35, oldPrice: 88, rating: 4.1, reviews: 6220, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/sdx/sdx09709/r/95.jpg", badge: "60% הנחה" },
+    { id: 45, name: "Adapalene 0.1 Gel - ג'ל אדפלן 0.1%", category: "קרם", price: 77, oldPrice: 192, rating: 4.2, reviews: 6340, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/dif/dif92030/r/41.jpg", badge: "60% הנחה" },
+    { id: 46, name: "Retinol Serum - סרום רטינול אנטי אייג'ינג", category: "סרום", price: 38, oldPrice: 95, rating: 4.3, reviews: 6460, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00797/r/109.jpg", badge: "60% הנחה" },
+    { id: 47, name: "Retinal Booster - בוסטר רטינל מתיחה", category: "סרום", price: 62, oldPrice: 155, rating: 4.4, reviews: 6580, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/clx/clx32081/r/8.jpg", badge: "60% הנחה" },
+    { id: 48, name: "Pimple Patch - מדבקות פצעוני אקנה", category: "מסכה", price: 13, oldPrice: 32, rating: 4.5, reviews: 6700, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/crx/crx47024/r/13.jpg", badge: "60% הנחה" },
+    { id: 49, name: "Multi-Peptide Serum - סרום פפטידים מרובה", category: "סרום", price: 38, oldPrice: 95, rating: 4.6, reviews: 6820, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03326/r/117.jpg", badge: "60% הנחה" },
+    { id: 50, name: "Hyaluronic Acid Serum - סרום חומצה היאלורונית", category: "סרום", price: 104, oldPrice: 260, rating: 4.7, reviews: 6940, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/tob/tob93404/r/75.jpg", badge: "60% הנחה" },
+    { id: 51, name: "Acne Wash 5.5oz - תמיסת ניקוי אקנה", category: "קרם", price: 52, oldPrice: 130, rating: 4.8, reviews: 7060, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl22855/r/109.jpg", badge: "60% הנחה" },
+    { id: 52, name: "Vitamin C Classic - סרום ויטמין C מבהיר", category: "סרום", price: 38, oldPrice: 95, rating: 4.9, reviews: 7180, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00801/r/142.jpg", badge: "60% הנחה" },
+    { id: 53, name: "Hyaluronic Serum - סרום חומצה היאלורונית מעמיק", category: "סרום", price: 38, oldPrice: 95, rating: 4.0, reviews: 7300, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00878/r/95.jpg", badge: "60% הנחה" },
+    { id: 54, name: "Age Refining Serum - סרום ויטמין C אנטי אייג'ינג", category: "סרום", price: 67, oldPrice: 168, rating: 4.1, reviews: 7420, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/syi/syi02265/r/96.jpg", badge: "60% הנחה" },
+    { id: 55, name: "Pycnogenol Cream - קרם סרום פיקנוגנול", category: "סרום", price: 30, oldPrice: 75, rating: 4.2, reviews: 7540, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/mbn/mbn01300/r/152.jpg", badge: "60% הנחה" },
+];
+
+        const PRODUCTS_VERSION = 5;
+        let products = [];
+        let currentCategory = 'all';
+
+        function loadProducts() {
+            const version = parseInt(localStorage.getItem('auraProductsVersion') || '0');
+            if (version < PRODUCTS_VERSION) {
+                localStorage.removeItem('auraProducts');
+                localStorage.setItem('auraProductsVersion', String(PRODUCTS_VERSION));
+            }
+            const stored = localStorage.getItem('auraProducts');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    products = parsed.length > 0 ? parsed : DEFAULT_PRODUCTS;
+                } catch { products = DEFAULT_PRODUCTS; }
+            } else {
+                products = DEFAULT_PRODUCTS;
+                localStorage.setItem('auraProducts', JSON.stringify(DEFAULT_PRODUCTS));
+            }
+        }
+
+        function getCategories() {
+            const cats = ['all', ...new Set(products.map(p => p.category))];
+            const labels = { all: 'الكل' };
+            cats.forEach(c => { if (c !== 'all') labels[c] = c; });
+            const container = document.getElementById('category-filters');
+            container.innerHTML = cats.map(c => `
+                <button onclick="filterCategory('${c}', this)" class="category-btn px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition shadow-sm ${c === 'all' ? 'bg-amber-700 text-white' : 'bg-white text-stone-600 border border-stone-200 hover:border-amber-700'}">${labels[c] || c}</button>
+            `).join('');
+        }
+
+        function renderProducts(list) {
+            const grid = document.getElementById('products-grid');
+            if (!list || list.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-12 text-stone-500">لا توجد منتجات مطابقة للبحث.</div>';
+                return;
+            }
+            grid.innerHTML = list.map(p => `
+                <div class="bg-white rounded-2xl md:rounded-3xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-xl transition flex flex-col justify-between group cursor-pointer" onclick="window.location.href='product.html?id=${p.id}'">
+                    <div>
+                        <div class="relative bg-stone-100 aspect-square overflow-hidden flex items-center justify-center p-4 md:p-6">
+                            <img src="${p.image}" alt="${p.name}" class="w-4/5 h-4/5 object-contain transition duration-500 group-hover:scale-105">
+                            <span class="absolute top-2 right-2 md:top-4 md:right-4 bg-amber-700 text-white text-[8px] md:text-[10px] font-bold px-1.5 py-0.5 md:px-2.5 md:py-1 rounded-full shadow">${p.badge || 'مميز'}</span>
+                        </div>
+                        <div class="p-3 md:p-6 space-y-1 md:space-y-2">
+                            <div class="flex items-center gap-1 text-amber-500 text-[10px] md:text-xs">
+                                <span>★</span> <span class="font-bold text-stone-700">${p.rating || 4.5}</span> <span class="text-stone-400">(${p.reviews || 0})</span>
+                            </div>
+                            <h3 class="font-extrabold text-stone-900 text-xs md:text-base leading-snug">${p.name}</h3>
+                        </div>
+                    </div>
+                    <div class="p-3 md:p-6 pt-0 md:pt-0 flex items-center justify-between">
+                        <div>
+                            ${p.oldPrice ? '<div class="text-[10px] md:text-xs text-stone-400 line-through">' + p.oldPrice + '.00 ₪</div>' : ''}
+                            <div class="text-sm md:text-xl font-extrabold text-amber-800">${p.price}.00 ₪</div>
+                        </div>
+                        <div class="flex gap-1.5 md:gap-2">
+                            <button onclick="event.stopPropagation(); addToCart(${p.id})" class="bg-stone-900 hover:bg-stone-800 text-white px-2 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl text-[9px] md:text-xs font-bold shadow transition flex-1" data-i18n="add_cart">أضف للسلة</button>
+                            <button onclick="event.stopPropagation(); buyNow(${p.id})" class="bg-amber-700 hover:bg-amber-800 text-white px-2 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl text-[9px] md:text-xs font-bold shadow transition flex-1" data-i18n="buy_now">شراء فوري</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterCategory(cat, btn) {
+            currentCategory = cat;
+            document.querySelectorAll('.category-btn').forEach(b => {
+                b.className = "category-btn px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition shadow-sm bg-white text-stone-600 border border-stone-200 hover:border-amber-700";
+            });
+            if (btn) btn.className = "category-btn px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition shadow-sm bg-amber-700 text-white";
+            filterProducts();
+        }
+
+        function filterProducts() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            let filtered = products.filter(p => {
+                const matchesCat = currentCategory === 'all' || p.category === currentCategory;
+                const matchesSearch = p.name.toLowerCase().includes(query);
+                return matchesCat && matchesSearch;
+            });
+            renderProducts(filtered);
+        }
+
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+            let cart = JSON.parse(localStorage.getItem('auraCart')) || [];
+            const existing = cart.find(item => item.id === id);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                cart.push({ id: product.id, name: product.name, price: product.price, image: product.image, qty: 1 });
+            }
+            localStorage.setItem('auraCart', JSON.stringify(cart));
+            updateCartBadge();
+            var btn = event && event.target;
+            if (btn) { btn.textContent = '✓'; btn.classList.add('bg-emerald-600'); btn.classList.remove('bg-stone-900','hover:bg-stone-800'); setTimeout(function(){ btn.textContent = 'أضف للسلة'; btn.classList.remove('bg-emerald-600'); btn.classList.add('bg-stone-900','hover:bg-stone-800'); }, 1000); }
+        }
+
+        function buyNow(id) {
+            addToCart(id);
+            window.location.href = 'cart.html';
+        }
+
+        function updateCartBadge() {
+            const cart = JSON.parse(localStorage.getItem('auraCart')) || [];
+            const total = cart.reduce((s, i) => s + i.qty, 0);
+            const badge = document.getElementById('cart-badge');
+            if (badge) badge.textContent = total;
+        }
+
+        loadProducts();
+        getCategories();
+        renderProducts(products);
+        updateCartBadge();
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'auraCart') updateCartBadge();
+            if (e.key === 'auraProducts') { loadProducts(); getCategories(); filterProducts(); }
+        });
+    </script>
+    <script src="lang.js"></script>
+    <script src="social-proof.js"></script>
+</body>
+</html>

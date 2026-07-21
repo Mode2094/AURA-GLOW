@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="logo.png">
+    <title>המוצר - AURA GLOW</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>body{font-family:'Cairo',sans-serif}html{visibility:hidden}html.ready{visibility:visible}</style>
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased">
+
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <a href="store.html" class="flex items-center gap-2"><img src="logo.png" alt="AURA GLOW" class="h-10 md:h-12"></a>
+            <div class="flex items-center gap-4">
+                <a href="store.html" class="text-xs text-stone-500 hover:text-stone-700 transition font-medium">החנות</a>
+                <a href="cart.html" class="relative bg-amber-50 hover:bg-amber-100 text-amber-800 p-2.5 rounded-full transition flex items-center gap-2 px-4 border border-amber-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    <span class="text-xs font-bold">סל קניות</span>
+                    <span id="cart-badge" class="absolute -top-1 -right-1 bg-amber-700 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold shadow">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-36 md:pb-40" id="product-main">
+        <div id="product-not-found" class="hidden text-center py-20">
+            <div class="text-6xl mb-4">😕</div>
+            <h2 class="text-2xl font-bold text-stone-800 mb-2">המוצר לא נמצא</h2>
+            <a href="store.html" class="inline-block bg-stone-900 text-white px-8 py-3 rounded-full text-sm font-bold mt-4">חזור לחנות</a>
+        </div>
+
+        <div id="product-content" class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+            <div class="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-sm p-8 flex items-center justify-center aspect-square">
+                <img id="product-image" src="" alt="" class="w-4/5 h-4/5 object-contain">
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <span id="product-badge" class="bg-amber-700 text-white text-xs font-bold px-3 py-1.5 rounded-full"></span>
+                    <h1 id="product-name" class="text-3xl font-extrabold text-stone-900 mt-3 leading-tight"></h1>
+                </div>
+                <div class="flex items-center gap-2 text-amber-500 text-sm">
+                    <span>★</span>
+                    <span id="product-rating" class="font-bold text-stone-700"></span>
+                    <span id="product-reviews" class="text-stone-400"></span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="product-price" class="text-3xl font-extrabold text-amber-800"></span>
+                    <span id="product-oldprice" class="text-lg text-stone-400 line-through"></span>
+                </div>
+                <p id="product-category" class="text-xs text-stone-500 bg-stone-100 inline-block px-3 py-1 rounded-full"></p>
+                <div class="border-t border-stone-200 pt-6 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center border border-stone-300 rounded-xl overflow-hidden bg-white">
+                            <button onclick="changeQty(-1)" class="px-4 py-2 text-stone-600 hover:bg-stone-100 font-bold text-lg">-</button>
+                            <span id="qty-display" class="px-5 py-2 font-bold text-stone-800 text-base min-w-[50px] text-center">1</span>
+                            <button onclick="changeQty(1)" class="px-4 py-2 text-stone-600 hover:bg-stone-100 font-bold text-lg">+</button>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button id="btn-add-cart" class="flex-1 bg-stone-900 hover:bg-stone-800 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition" data-i18n="add_cart">הוסף לסל</button>
+                        <button id="btn-buy-now" class="flex-1 bg-amber-700 hover:bg-amber-800 text-white py-3 rounded-xl font-bold text-sm shadow-lg transition" data-i18n="buy_now">קנה עכשיו</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="floating-bar" class="fixed bottom-4 left-2 right-2 md:bottom-6 md:left-6 md:right-6 z-50 bg-white backdrop-blur-md border border-stone-200 shadow-2xl p-3 md:p-4 rounded-2xl max-w-5xl mx-auto hidden" style="transition: transform 0.5s ease, opacity 0.5s ease;">
+            <button id="close-floating" class="absolute -top-3 -right-3 md:-top-4 md:-right-4 w-8 h-8 md:w-10 md:h-10 bg-white border-2 border-stone-200 rounded-full flex items-center justify-center shadow-lg hover:bg-stone-100 transition z-10 text-stone-500 hover:text-stone-800 text-lg md:text-xl font-bold">&times;</button>
+            <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+                <div class="hidden md:block">
+                    <div id="float-product-name" class="text-xs text-stone-500 font-bold"></div>
+                    <div class="flex items-center gap-2">
+                        <span id="float-price" class="text-lg font-extrabold text-amber-800"></span>
+                        <span id="float-oldprice" class="text-xs text-stone-400 line-through"></span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 md:gap-3 flex-1 md:flex-none justify-end">
+                    <div class="flex items-center border border-stone-300 rounded-xl overflow-hidden bg-white">
+                        <button onclick="changeQty(-1)" class="px-3 py-1.5 md:px-4 md:py-2 text-stone-600 hover:bg-stone-100 font-bold text-base">-</button>
+                        <span id="float-qty" class="px-3 py-1.5 md:px-5 md:py-2 font-bold text-stone-800 text-sm min-w-[36px] text-center">1</span>
+                        <button onclick="changeQty(1)" class="px-3 py-1.5 md:px-4 md:py-2 text-stone-600 hover:bg-stone-100 font-bold text-base">+</button>
+                    </div>
+                    <button id="float-add-cart" class="bg-stone-900 hover:bg-stone-800 text-white px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold text-xs md:text-sm shadow-lg transition">הוסף לסל</button>
+                    <button id="float-buy-now" class="bg-amber-700 hover:bg-amber-800 text-white px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold text-xs md:text-sm shadow-lg transition">קנה עכשיו</button>
+                </div>
+            </div>
+        </div>
+
+        <section class="max-w-4xl mx-auto mt-16" id="reviews-section">
+            <div class="bg-white rounded-3xl border border-stone-200 p-8">
+                <h2 class="text-2xl font-extrabold text-stone-900 mb-6" data-i18n="reviews_title">ביקורות ודירוגים <span id="reviews-count" class="text-sm font-bold text-stone-400"></span></h2>
+                <div id="reviews-container" class="space-y-4 mb-8 max-h-[600px] overflow-y-auto pr-1"></div>
+                <div class="border-t border-stone-200 pt-6">
+                    <h3 class="font-bold text-stone-900 mb-4" data-i18n="add_review">הוסף ביקורת</h3>
+                    <form id="review-form" class="space-y-4">
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs font-semibold text-stone-600" data-i18n="your_rating">הדירוג שלך:</label>
+                            <div class="flex gap-1 text-2xl" id="star-rating">
+                                <span class="star cursor-pointer text-stone-300 hover:text-amber-500 transition" data-val="1">★</span>
+                                <span class="star cursor-pointer text-stone-300 hover:text-amber-500 transition" data-val="2">★</span>
+                                <span class="star cursor-pointer text-stone-300 hover:text-amber-500 transition" data-val="3">★</span>
+                                <span class="star cursor-pointer text-stone-300 hover:text-amber-500 transition" data-val="4">★</span>
+                                <span class="star cursor-pointer text-stone-300 hover:text-amber-500 transition" data-val="5">★</span>
+                            </div>
+                            <span id="selected-rating" class="text-xs text-stone-400 mr-2" data-i18n="choose_rating">בחר דירוג</span>
+                        </div>
+                        <input type="hidden" id="review-rating" value="0">
+                        <div>
+                            <label class="block text-xs font-semibold text-stone-600 mb-1" data-i18n="your_name">שם</label>
+                            <input type="text" id="review-name" required placeholder="David Cohen" class="w-full px-4 py-2.5 rounded-xl border border-stone-300 focus:ring-2 focus:ring-amber-600 outline-none text-sm transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-stone-600 mb-1" data-i18n="your_comment">תגובה</label>
+                            <textarea id="review-text" required rows="3" placeholder="שתף אותנו בחוויה שלך..." class="w-full px-4 py-2.5 rounded-xl border border-stone-300 focus:ring-2 focus:ring-amber-600 outline-none text-sm transition"></textarea>
+                        </div>
+                        <button type="submit" class="bg-stone-900 hover:bg-stone-800 text-white px-6 py-3 rounded-xl text-sm font-bold transition" data-i18n="submit_review">שלח ביקורת</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-stone-900 text-stone-400 py-12 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap justify-center gap-6 mb-6 text-xs">
+                <a href="privacy.html" class="hover:text-white transition">מדיניות פרטיות</a>
+                <a href="terms.html" class="hover:text-white transition">תנאים והגבלות</a>
+                <a href="returns.html" class="hover:text-white transition">החזרות והחלפות</a>
+                <a href="shipping.html" class="hover:text-white transition">מדיניות משלוחים</a>
+                <a href="about.html" class="hover:text-white transition">אודותינו</a>
+            </div>
+            <div class="text-center space-y-4 border-t border-stone-800 pt-6">
+                <span class="text-xl font-bold text-white tracking-wider">AURA GLOW</span>
+                <p class="text-xs text-stone-500" data-i18n="footer_tag">החנות הראשונה שלך לטיפוח עור מלכותי ויופי טבעי © 2026</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="notify.js"></script>
+    <script>
+        var currentQty = 1;
+        var currentProduct = null;
+
+        var DEFAULTS = [
+            {id:13,name:"Clarifying Exfoliant - תמיסת פילינג חומצה סליצילית",category:"סרום",price:54,oldPrice:135,rating:4.0,reviews:2500,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl29604/r/54.jpg"},
+            {id:14,name:"Vitamin C Serum - סרום ויטמין C מבהיר",category:"קרם",price:94,oldPrice:235,rating:4.1,reviews:2620,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/mhs/mhs12742/r/77.jpg"},
+            {id:15,name:"Glycolic + Lactic Acid Serum - סרום פילינג חומצות",category:"סרום",price:38,oldPrice:95,rating:4.2,reviews:2740,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03341/r/67.jpg"},
+            {id:16,name:"Skin Success Bar - סבון מבהיר כתמים",category:"טיפוח",price:13,oldPrice:32,rating:4.3,reviews:2860,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pal/pal07380/r/52.jpg"},
+            {id:17,name:"Overnight Spot Patches - מדבקות אקנה לילה",category:"סרום",price:41,oldPrice:102,rating:4.4,reviews:2980,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl26040/r/72.jpg"},
+            {id:18,name:"First Spray Serum - סרום ספריי כמהין",category:"סרום",price:90,oldPrice:225,rating:4.5,reviews:3100,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/dab/dab06875/r/39.jpg"},
+            {id:19,name:"Glow Filter Serum - סרום מבהיר ויטמין C",category:"סרום",price:95,oldPrice:238,rating:4.6,reviews:3220,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/eqq/eqq45647/r/37.jpg"},
+            {id:20,name:"Collagen Serum - סרום קולגן מחייה",category:"סרום",price:38,oldPrice:95,rating:4.7,reviews:3340,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00800/r/77.jpg"},
+            {id:21,name:"Sulfur Ointment - משחת אקנה 10% גופרית",category:"מסכה",price:27,oldPrice:68,rating:4.8,reviews:3460,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/dlc/dlc15042/r/49.jpg"},
+            {id:22,name:"Acne Pads 55 - פדים נגד אקנה",category:"קרם",price:20,oldPrice:50,rating:4.9,reviews:3580,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/sdx/sdx09701/r/89.jpg"},
+            {id:23,name:"Vitamin C 20% Serum - סרום ויטמין C 20%",category:"סרום",price:123,oldPrice:308,rating:4.0,reviews:3700,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/tml/tml00472/r/17.jpg"},
+            {id:24,name:"Centella Ampoule - אמפולת סנטלה מרגיעה",category:"סרום",price:59,oldPrice:148,rating:4.1,reviews:3820,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/sio/sio26060/r/57.jpg"},
+            {id:25,name:"Retinol Shot - סרום רטינול מתיחה",category:"סרום",price:59,oldPrice:148,rating:4.2,reviews:3940,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/clx/clx32080/r/21.jpg"},
+            {id:26,name:"Vitamin C Serum 4oz - סרום ויטמין C",category:"סרום",price:58,oldPrice:145,rating:4.3,reviews:4060,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pud/pud00608/r/88.jpg"},
+            {id:27,name:"Dark Circle Serum - סרום עיניים נגד עיגולים",category:"סרום",price:41,oldPrice:102,rating:4.4,reviews:4180,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03468/r/69.jpg"},
+            {id:28,name:"Acne Foaming Wash - תמיסת ניקוי אקנה",category:"קרם",price:14,oldPrice:35,rating:4.5,reviews:4300,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl22801/r/44.jpg"},
+            {id:29,name:"5-in-1 Eye Serum - סרום עיניים 5 ב-1",category:"סרום",price:36,oldPrice:90,rating:4.6,reviews:4420,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00977/r/84.jpg"},
+            {id:30,name:"Azelaic Acid Serum - סרום מרגיע אדמומיות",category:"סרום",price:91,oldPrice:228,rating:4.7,reviews:4540,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/auu/auu73719/r/17.jpg"},
+            {id:31,name:"Puffy Eye Serum - סרום עיניים נגד נפיחות",category:"סרום",price:41,oldPrice:102,rating:4.8,reviews:4660,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03469/r/50.jpg"},
+            {id:32,name:"Adapalene Gel - ג'ל אדפלן לאקנה",category:"קרם",price:53,oldPrice:132,rating:4.9,reviews:4780,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/acf/acf23456/r/38.jpg"},
+            {id:33,name:"Niacinamide 10 Serum - סרום מבהיר ניאצינמיד",category:"סרום",price:100,oldPrice:250,rating:4.0,reviews:4900,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/auu/auu73452/r/57.jpg"},
+            {id:34,name:"Snail Mucin Essence - תמצית שבלול 96%",category:"סרום",price:61,oldPrice:152,rating:4.1,reviews:5020,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/crx/crx47000/r/39.jpg"},
+            {id:35,name:"Propolis Glow Serum - סרום זוהר פרופוליס",category:"סרום",price:72,oldPrice:180,rating:4.2,reviews:5140,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/boj/boj11496/r/38.jpg"},
+            {id:36,name:"Dark Spot Serum - סרום מבהיר כתמים",category:"סרום",price:72,oldPrice:180,rating:4.3,reviews:5260,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/axi/axi61003/r/39.jpg"},
+            {id:37,name:"Sulfur Mini - משחת אקנה גופרית מיני",category:"מסכה",price:8,oldPrice:20,rating:4.4,reviews:5380,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/dlc/dlc15048/r/111.jpg"},
+            {id:38,name:"Clear Spot Patch - מדבקות פצעונים שקופות",category:"מסכה",price:14,oldPrice:35,rating:4.5,reviews:5500,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/smi/smi39001/r/14.jpg"},
+            {id:39,name:"Acne Creamy Wash - תמיסת ניקוי אקנה עדינה",category:"קרם",price:52,oldPrice:130,rating:4.6,reviews:5620,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl22706/r/79.jpg"},
+            {id:40,name:"PDRN Pink Serum - סרום פפטידים ורוד",category:"סרום",price:73,oldPrice:182,rating:4.7,reviews:5740,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/mcb/mcb10805/r/17.jpg"},
+            {id:41,name:"Niacinamide 5 Serum - סרום ניאצינמיד 5%",category:"סרום",price:41,oldPrice:102,rating:4.8,reviews:5860,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03480/r/71.jpg"},
+            {id:42,name:"Pore Reducing Serum - סרום מכווץ נקבוביות",category:"סרום",price:58,oldPrice:145,rating:4.9,reviews:5980,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/fky/fky60522/r/17.jpg"},
+            {id:43,name:"Ginseng Eye Serum - סרום עיניים ג'ינסנג",category:"סרום",price:63,oldPrice:158,rating:4.0,reviews:6100,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/boj/boj31614/r/81.jpg"},
+            {id:44,name:"Acne Pads 90 - פדים נגד אקנה 90",category:"קרם",price:35,oldPrice:88,rating:4.1,reviews:6220,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/sdx/sdx09709/r/95.jpg"},
+            {id:45,name:"Adapalene 0.1 Gel - ג'ל אדפלן 0.1%",category:"קרם",price:77,oldPrice:192,rating:4.2,reviews:6340,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/dif/dif92030/r/41.jpg"},
+            {id:46,name:"Retinol Serum - סרום רטינול אנטי אייג'ינג",category:"סרום",price:38,oldPrice:95,rating:4.3,reviews:6460,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00797/r/109.jpg"},
+            {id:47,name:"Retinal Booster - בוסטר רטינל מתיחה",category:"סרום",price:62,oldPrice:155,rating:4.4,reviews:6580,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/clx/clx32081/r/8.jpg"},
+            {id:48,name:"Pimple Patch - מדבקות פצעוני אקנה",category:"מסכה",price:13,oldPrice:32,rating:4.5,reviews:6700,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/crx/crx47024/r/13.jpg"},
+            {id:49,name:"Multi-Peptide Serum - סרום פפטידים מרובה",category:"סרום",price:38,oldPrice:95,rating:4.6,reviews:6820,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc03326/r/117.jpg"},
+            {id:50,name:"Hyaluronic Acid Serum - סרום חומצה היאלורונית",category:"סרום",price:104,oldPrice:260,rating:4.7,reviews:6940,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/tob/tob93404/r/75.jpg"},
+            {id:51,name:"Acne Wash 5.5oz - תמיסת ניקוי אקנה",category:"קרם",price:52,oldPrice:130,rating:4.8,reviews:7060,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/pxl/pxl22855/r/109.jpg"},
+            {id:52,name:"Vitamin C Classic - סרום ויטמין C מבהיר",category:"סרום",price:38,oldPrice:95,rating:4.9,reviews:7180,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00801/r/142.jpg"},
+            {id:53,name:"Hyaluronic Serum - סרום חומצה היאלורונית מעמיק",category:"סרום",price:38,oldPrice:95,rating:4.0,reviews:7300,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/adc/adc00878/r/95.jpg"},
+            {id:54,name:"Age Refining Serum - סרום ויטמין C אנטי אייג'ינג",category:"סרום",price:67,oldPrice:168,rating:4.1,reviews:7420,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/syi/syi02265/r/96.jpg"},
+            {id:55,name:"Pycnogenol Cream - קרם סרום פיקנוגנול",category:"סרום",price:30,oldPrice:75,rating:4.2,reviews:7540,image:"https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/mbn/mbn01300/r/152.jpg"}
+        ];
+
+        function getProductById(id) {
+            var stored;
+            try { stored = localStorage.getItem('auraProducts'); } catch(e) { stored = null; }
+            if (stored) {
+                try {
+                    var parsed = JSON.parse(stored);
+                    if (parsed && parsed.length > 0) {
+                        for (var i = 0; i < parsed.length; i++) {
+                            if (String(parsed[i].id) === String(id)) return parsed[i];
+                        }
+                    }
+                } catch(e) {}
+            }
+            for (var i = 0; i < DEFAULTS.length; i++) {
+                if (String(DEFAULTS[i].id) === String(id)) return DEFAULTS[i];
+            }
+            return null;
+        }
+
+        function loadProduct() {
+            var params = new URLSearchParams(window.location.search);
+            var id = params.get('id');
+            currentProduct = getProductById(id);
+
+            if (!currentProduct) {
+                document.getElementById('product-content').classList.add('hidden');
+                document.getElementById('product-not-found').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('product-not-found').classList.add('hidden');
+            document.getElementById('product-content').classList.remove('hidden');
+
+            document.getElementById('product-image').src = currentProduct.image;
+            document.getElementById('product-image').alt = currentProduct.name;
+            document.getElementById('product-name').textContent = currentProduct.name;
+            document.getElementById('product-badge').textContent = currentProduct.badge || '60% הנחה';
+            document.getElementById('product-price').textContent = currentProduct.price + '.00 ₪';
+            document.getElementById('product-oldprice').textContent = currentProduct.oldPrice ? currentProduct.oldPrice + '.00 ₪' : '';
+            document.getElementById('product-rating').textContent = currentProduct.rating || 4.5;
+            document.getElementById('product-reviews').textContent = '(' + (currentProduct.reviews || 0) + ')';
+            document.getElementById('product-category').textContent = currentProduct.category || '';
+            document.title = currentProduct.name + ' - AURA GLOW';
+            currentQty = 1;
+            document.getElementById('qty-display').textContent = 1;
+
+            var fpn = document.getElementById('float-product-name');
+            var fp = document.getElementById('float-price');
+            var fo = document.getElementById('float-oldprice');
+            var fq = document.getElementById('float-qty');
+            if (fpn) fpn.textContent = currentProduct.name;
+            if (fp) fp.textContent = currentProduct.price + '.00 ₪';
+            if (fo) fo.textContent = currentProduct.oldPrice ? currentProduct.oldPrice + '.00 ₪' : '';
+            if (fq) fq.textContent = 1;
+
+            setTimeout(function() {
+                var fb = document.getElementById('floating-bar');
+                if (fb) { fb.classList.remove('hidden'); }
+            }, 3000);
+        }
+
+        function changeQty(d) {
+            currentQty = Math.max(1, Math.min(99, currentQty + d));
+            document.getElementById('qty-display').textContent = currentQty;
+            document.getElementById('float-qty').textContent = currentQty;
+        }
+
+        function doAddCart(redirect, btn) {
+            if (!currentProduct) return;
+            var cart = JSON.parse(localStorage.getItem('auraCart') || '[]');
+            var found = false;
+            for (var i = 0; i < cart.length; i++) {
+                if (cart[i].id === currentProduct.id) { cart[i].qty += currentQty; found = true; break; }
+            }
+            if (!found) cart.push({id:currentProduct.id,name:currentProduct.name,price:currentProduct.price,image:currentProduct.image,qty:currentQty});
+            localStorage.setItem('auraCart', JSON.stringify(cart));
+            document.getElementById('cart-badge').textContent = cart.reduce(function(s,i){return s+i.qty;},0);
+
+            if (btn) {
+                var orig = btn.innerHTML;
+                btn.innerHTML = '✓';
+                btn.classList.add('bg-emerald-600');
+                btn.classList.remove('bg-stone-900','bg-amber-700');
+                setTimeout(function() {
+                    if (redirect) { window.location.href = 'cart.html'; return; }
+                    btn.innerHTML = orig;
+                    btn.classList.remove('bg-emerald-600');
+                    btn.classList.add(redirect ? 'bg-amber-700' : 'bg-stone-900');
+                }, 800);
+            } else if (redirect) {
+                window.location.href = 'cart.html';
+            }
+        }
+
+        document.getElementById('btn-add-cart').addEventListener('click', function() { doAddCart(false, this); });
+        document.getElementById('btn-buy-now').addEventListener('click', function() { doAddCart(true, this); });
+        document.getElementById('float-add-cart').addEventListener('click', function() { doAddCart(false, this); });
+        document.getElementById('float-buy-now').addEventListener('click', function() { doAddCart(true, this); });
+        document.getElementById('close-floating').addEventListener('click', function() {
+            document.getElementById('floating-bar').classList.add('hidden');
+        });
+
+        var allReviews = {};
+        function initReviews() {
+            var pid = currentProduct ? currentProduct.id : 0;
+            try { allReviews = JSON.parse(localStorage.getItem('auraReviews') || '{}'); } catch(e) { allReviews = {}; }
+            if (!allReviews[pid] || allReviews[pid].length === 0) {
+                var names = ['David Cohen','Sarah Levy','Michael Shapiro','Rachel Goldberg','Daniel Friedman','Rebecca Katz','Jacob Rosenberg','Hannah Weiss','Samuel Stein','Leah Abrams','Noah Isaacson','Emma Feldman','Ethan Greenberg','Olivia Solomon','Benjamin Klein','Ava Schwartz','William Silver','Mia Goldstein','James Rosen','Sophia Weinstein','Yael Barak','Eitan Dagan','Shira Elad','Avi Golan','Noga Halevi','Boaz Israeli','Tamar Kidron','Dov Levin','Anat Mizrahi','Elad Navon','Ruth Oren','Gideon Peled','Yael Ronen','Amir Shemesh','Noa Tal','Yoni Ullman','Michal Vered','Ziv Yaron','Shani Zohar','Ariel Paz','Nurit Shahar','Ofer Bar','Irit Shalom','Uri Landau','Dafna Peer','Alon Geffen','Merav Gilad','Yoav Sadeh','Carmit Barak','Asaf Manor','Neta Sharir','Yotam Kedem','Shira Gefen','Ido Navon','Hila Shemesh','Yoel Zohar','Avital Rimon','Ronen Bachar','Liat Chen','Maya Shamir'];
+                var comments = ['מוצר מעולה!','מאוד מרוצה מהתוצאות!','פשוט מדהים!','ממליץ בחום','קניה מצוינת!','איכות פנומנלית','שירות מהיר ומקצועי','העור שלי נראה הרבה יותר טוב','מומלץ מאוד','結果 מדברות בעד עצמן','Excellent product!','Best skincare ever!','Amazing results!','Highly recommend','Fast delivery!'];
+                var count = 65 + Math.floor(Math.random() * 46);
+                var revs = [];
+                for (var i = 0; i < count; i++) {
+                    var days = Math.floor(Math.random() * 60);
+                    revs.push({id:Date.now()+i,name:names[Math.floor(Math.random()*names.length)],rating:parseFloat((3+Math.random()*2).toFixed(1)),comment:comments[Math.floor(Math.random()*comments.length)],time:days===0?'היום':'לפני '+days+' ימים'});
+                }
+                allReviews[pid] = revs;
+                try { localStorage.setItem('auraReviews', JSON.stringify(allReviews)); } catch(e) {}
+            }
+            renderReviews(pid);
+        }
+
+        function renderReviews(pid) {
+            var revs = allReviews[pid] || [];
+            document.getElementById('reviews-count').textContent = '(' + revs.length + ' דירוג)';
+            var c = document.getElementById('reviews-container');
+            if (revs.length === 0) { c.innerHTML = '<div class="text-center py-8 text-stone-400 text-sm">אין ביקורות עדיין</div>'; return; }
+            var html = '';
+            for (var i = revs.length - 1; i >= 0; i--) {
+                var r = revs[i];
+                var stars = '';
+                for (var s = 0; s < 5; s++) stars += s < Math.round(r.rating) ? '★' : '☆';
+                html += '<div class="bg-stone-50 rounded-2xl p-4 border border-stone-100"><div class="flex items-center justify-between mb-2"><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-stone-300 text-white flex items-center justify-center text-sm font-bold">' + r.name.charAt(0) + '</div><div><div class="font-bold text-sm text-stone-800">' + r.name + '</div><div class="text-[10px] text-stone-400">' + (r.time||'היום') + '</div></div></div><div class="flex items-center gap-0.5 text-amber-500 text-sm">' + stars + '</div></div><p class="text-xs text-stone-600 leading-relaxed">' + r.comment + '</p></div>';
+            }
+            c.innerHTML = html;
+        }
+
+        loadProduct();
+        try { document.getElementById('cart-badge').textContent = JSON.parse(localStorage.getItem('auraCart')||'[]').reduce(function(s,i){return s+i.qty;},0); } catch(e) {}
+
+        document.querySelectorAll('#star-rating .star').forEach(function(s) {
+            s.addEventListener('click', function() {
+                var val = parseInt(this.dataset.val);
+                document.getElementById('review-rating').value = val;
+                document.getElementById('selected-rating').textContent = val + ' / 5';
+                document.querySelectorAll('#star-rating .star').forEach(function(el) {
+                    el.className = 'star cursor-pointer ' + (parseInt(el.dataset.val) <= val ? 'text-amber-500' : 'text-stone-300') + ' transition';
+                });
+            });
+        });
+
+        document.getElementById('review-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var pid = currentProduct ? currentProduct.id : 0;
+            var name = document.getElementById('review-name').value.trim();
+            var rating = parseInt(document.getElementById('review-rating').value);
+            var comment = document.getElementById('review-text').value.trim();
+            if (!name || !rating || !comment) return;
+            if (!allReviews[pid]) allReviews[pid] = [];
+            allReviews[pid].push({id:Date.now(),name:name,rating:rating,comment:comment,time:'היום'});
+            try { localStorage.setItem('auraReviews', JSON.stringify(allReviews)); } catch(e) {}
+            renderReviews(pid);
+            document.getElementById('review-form').reset();
+            document.getElementById('review-rating').value = '0';
+        });
+
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'auraCart') {
+                try { document.getElementById('cart-badge').textContent = JSON.parse(localStorage.getItem('auraCart')||'[]').reduce(function(s,i){return s+i.qty;},0); } catch(e) {}
+            }
+        });
+
+        try { document.documentElement.classList.add('ready'); } catch(e) {}
+    </script>
+    <script src="lang.js"></script>
+</body>
+</html>
