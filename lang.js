@@ -1,5 +1,5 @@
 (function() {
-    try { document.head.insertAdjacentHTML('beforeend', '<style id="lang-style">html { visibility: hidden; } html.lang-ready { visibility: visible; }</style>'); } catch(e) {}
+    try { document.head.insertAdjacentHTML('beforeend', '<style id="lang-style">html { visibility: hidden; } html.lang-ready { visibility: visible; } #lang-toggle, select[onchange*="setLang"] { display: none !important; }</style>'); } catch(e) {}
     var currentLang = 'he';
     try { currentLang = localStorage.getItem('auraLang') || 'he'; } catch(e) {}
 

@@ -31,10 +31,6 @@
                 <span class="security-badge">🛡️ CSP</span>
             </div>
             <div class="flex items-center gap-4">
-                <select onchange="setLang(this.value)" class="text-xs bg-stone-800 text-white border border-stone-600 rounded-lg px-2 py-1.5 font-bold outline-none cursor-pointer">
-                    <option value="ar">العربية</option>
-                    <option value="he">עברית</option>
-                </select>
                 <a href="/store/" class="text-xs text-stone-300 hover:text-white transition">عرض المتجر</a>
                 <button onclick="logout()" class="text-xs text-rose-300 hover:text-rose-200 transition font-bold">تسجيل خروج</button>
                 <div class="w-10 h-10 rounded-full bg-amber-700 flex items-center justify-center font-bold text-white">أ</div>
@@ -173,7 +169,8 @@
                 <a href="/terms/" class="hover:text-white transition">الشروط والأحكام</a>
                 <a href="/about/" class="hover:text-white transition">من نحن</a>
             </div>
-            <div class="text-center">
+            <div class="text-center space-y-3">
+                <img src="../logo.png" alt="AURA GLOW" class="h-10 mx-auto opacity-95">
                 <p class="text-xs text-stone-500" data-i18n="footer_tag">لوحة تحكم أورا جلو الإدارية © 2026</p>
             </div>
         </div>
@@ -332,7 +329,7 @@
             }
             container.innerHTML = products.map(p => `
                 <div class="bg-white rounded-3xl p-5 border border-stone-200 flex flex-col justify-between shadow-sm space-y-4">
-                    <div class="flex items-center gap-4"><button onclick="var l=localStorage.getItem('auraLang')||'he';setLang(l==='he'?'ar':'he');" class="text-xs font-bold text-stone-500 hover:text-amber-700 transition border border-stone-300 rounded-full px-2.5 py-1" id="lang-toggle">HE</button>
+                    <div class="flex items-center gap-4">
                         <img src="${p.image}" alt="${p.name}" class="w-16 h-16 object-contain bg-stone-50 rounded-2xl p-2 border border-stone-100">
                         <div>
                             <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md">${p.category}</span>
