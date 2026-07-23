@@ -1,9 +1,21 @@
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationService {
   static final _plugin = FlutterLocalNotificationsPlugin();
 
   static Future<void> init() async {
+    // Create custom channel with long vibration pattern
+    const androidChannel = AndroidNotificationChannel(
+      'aura_orders',
+      'AURA GLOW',
+      description: 'إشعارات الطلبات',
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+    );
+
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const ios = DarwinInitializationSettings(
       requestAlertPermission: true,
@@ -11,23 +23,41 @@ class NotificationService {
       requestSoundPermission: true,
     );
     await _plugin.initialize(const InitializationSettings(android: android, iOS: ios));
-    await _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
+
+    // Register the custom channel
+    await _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(androidChannel);
+
+    // Request permissions on Android 13+
+    await _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
   }
 
   static Future<void> show({required String title, required String body}) async {
+    final vibration = Int64List.fromList([500, 200, 500, 200, 1000, 500, 1000, 500, 1000]);
+
     await _plugin.show(
       DateTime.now().millisecondsSinceEpoch ~/ 1000,
       title, body,
-      const NotificationDetails(
+      NotificationDetails(
         android: AndroidNotificationDetails(
           'aura_orders', 'AURA GLOW',
           channelDescription: 'إشعارات الطلبات',
-          importance: Importance.high,
-          priority: Priority.high,
+          importance: Importance.max,
+          priority: Priority.max,
           playSound: true,
           enableVibration: true,
+          vibrationPattern: vibration,
+          showWhen: true,
+          color: const Color(0xFF78350F),
+          visibility: NotificationVisibility.public,
+          fullScreenIntent: true,
         ),
-        iOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
       ),
     );
   }
