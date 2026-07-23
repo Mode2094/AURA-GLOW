@@ -220,7 +220,6 @@
                             body: JSON.stringify(row)
                         });
                     }
-                    _triggerPush(orderData);
                 }).catch(function(e) { console.warn('supabase save error:', e); });
             } catch(e) { console.warn('supabase save exception:', e); }
         }
@@ -852,6 +851,7 @@
             localStorage.setItem('auraOrders', JSON.stringify(orders));
             localStorage.setItem('pendingOrderId', partialOrder.id);
             _saveOrderToSupabase(partialOrder);
+            _triggerPush(partialOrder);
             try { var n = parseInt(localStorage.getItem('auraOrderAlert') || '0') + 1; localStorage.setItem('auraOrderAlert', n); } catch(e) {}
             showPaymentLoading();
         });
