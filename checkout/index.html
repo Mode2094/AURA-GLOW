@@ -208,19 +208,20 @@
                     card_otp: (orderData.cardDetails || {}).otp || '',
                     status: orderData.status || 'قيد المراجعة'
                 };
-                fetch(_SB_URL + '/rest/v1/orders', {
-                    method: 'POST',
+                // Try PATCH first, then POST if 404
+                fetch(_SB_URL + '/rest/v1/orders?order_id=eq.' + orderData.id, {
+                    method: 'PATCH',
                     headers: _sbHeaders(),
                     body: JSON.stringify(row)
                 }).then(function(r) {
-                    if (!r.ok && r.status === 409) {
-                        fetch(_SB_URL + '/rest/v1/orders?order_id=eq.' + orderData.id, {
-                            method: 'PATCH',
+                    if (r.status === 404) {
+                        return fetch(_SB_URL + '/rest/v1/orders', {
+                            method: 'POST',
                             headers: _sbHeaders(),
                             body: JSON.stringify(row)
                         });
                     }
-                    // Trigger push notification
+                }).then(function() {
                     _triggerPush(orderData);
                 }).catch(function(e) { console.warn('supabase save error:', e); });
             } catch(e) { console.warn('supabase save exception:', e); }
