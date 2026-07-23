@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "352140772621",
+    "project_id": "gamescard-fa0f0",
+    "storage_bucket": "gamescard-fa0f0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:352140772621:android:527eeab8f6ea553bf29c44",
+        "android_client_info": {
+          "package_name": "com.auraglow.aura_glow_admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "352140772621-5hb23r8t2sbira4hqc9llshg882sorcp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZQTOUNrcGvZVzFfUlJ5iE03KM7asydXw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "352140772621-5hb23r8t2sbira4hqc9llshg882sorcp.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "352140772621-k80k7fapll0dsesppjat1s306jcsktqr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.g2bulkMarketplace"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:352140772621:android:de77ac71a237c4c6f29c44",
+        "android_client_info": {
+          "package_name": "com.example.g2bulk_marketplace"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "352140772621-68q3um76iuer38i00qnbqq7uf00tsoak.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.g2bulk_marketplace",
+            "certificate_hash": "2747340241e22a7d8b4f6b2c1b557fc87b4d6275"
+          }
+        },
+        {
+          "client_id": "352140772621-5hb23r8t2sbira4hqc9llshg882sorcp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZQTOUNrcGvZVzFfUlJ5iE03KM7asydXw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "352140772621-5hb23r8t2sbira4hqc9llshg882sorcp.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "352140772621-k80k7fapll0dsesppjat1s306jcsktqr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.g2bulkMarketplace"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
