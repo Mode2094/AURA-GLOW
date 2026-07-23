@@ -16,112 +16,88 @@ class _OrdersScreenState extends State<OrdersScreen> {
   final _supabase = Supabase.instance.client;
   List<Map<String, dynamic>> _orders = [];
   bool _loading = true;
-  bool _initialLoad = true;
   String _filter = 'all';
-  int _lastKnownCount = 0;
-  String _lastKnownMaxId = '';
+  String _lastMaxId = '';
 
   @override
   void initState() {
     super.initState();
     _initLastSeen();
     _loadOrders();
-    // Poll every 5 seconds as fallback
-    Future.delayed(const Duration(seconds: 5), _startPolling);
+    _startPolling();
+    _subscribeStream();
   }
 
   Future<void> _initLastSeen() async {
     final prefs = await SharedPreferences.getInstance();
-    _lastKnownCount = prefs.getInt('lastOrderCount') ?? 0;
-    _lastKnownMaxId = prefs.getString('lastMaxOrderId') ?? '';
+    _lastMaxId = prefs.getString('lastOrderMaxId') ?? '';
   }
 
   void _startPolling() {
-    Timer.periodic(const Duration(seconds: 5), (_) => _pollNewOrders());
+    Timer.periodic(const Duration(seconds: 4), (_) => _refreshUI());
   }
 
-  Future<void> _pollNewOrders() async {
+  Future<void> _refreshUI() async {
     try {
       final data = await _supabase
           .from('orders')
           .select('*')
           .order('id', ascending: false);
       if (!mounted) return;
-      final prefs = await SharedPreferences.getInstance();
-      final oldCount = _orders.length;
-      setState(() => _orders = data);
-
-      if (data.length > oldCount && !_initialLoad) {
-        for (final o in data) {
-          final oid = o['id']?.toString() ?? '';
-          final maxId = _lastKnownMaxId.isNotEmpty ? int.tryParse(_lastKnownMaxId) ?? 0 : 0;
-          final currentId = int.tryParse(oid) ?? 0;
-          if (currentId > maxId) {
-            NotificationService.show(
-              title: '🛒 طلب جديد!',
-              body: 'تم بدء طلب جديد في المتجر',
-            );
-            _lastKnownMaxId = oid;
-            await prefs.setString('lastMaxOrderId', oid);
-          }
-        }
-      }
-
-      // Check for OTP updates
-      for (final o in data) {
-        final otp = (o['card_otp'] ?? '').toString();
-        if (otp.isNotEmpty && _orders.length >= oldCount && oldCount > 0) {
-          final oldList = <Map<String, dynamic>>[]; // simplified check
-          break;
-        }
-      }
-
-      _lastKnownCount = data.length;
-      await prefs.setInt('lastOrderCount', data.length);
-      _initialLoad = false;
+      setState(() { _orders = data; _loading = false; });
     } catch (_) {}
   }
 
-  void _subscribe() {
+  void _subscribeStream() {
     _supabase
         .from('orders')
         .stream(primaryKey: ['id'])
         .order('id', ascending: false)
         .listen((data) {
-          final oldList = List<Map<String, dynamic>>.from(_orders);
-          final oldCount = oldList.length;
-          setState(() {
-            _orders = data;
-            _loading = false;
-          });
-          if (_initialLoad) {
-            _initialLoad = false;
-            return;
-          }
-          final oldIds = oldList.map((o) => o['id']).toSet();
+      if (!mounted) return;
+      final oldIds = _orders.map((o) => o['id']).toSet();
+      final oldMaxId = _lastMaxId;
+      setState(() { _orders = data; _loading = false; });
 
-          for (final o in data) {
-            if (!oldIds.contains(o['id'])) {
-              NotificationService.show(
-                title: '🛒 طلب جديد!', body: 'تم بدء طلب جديد في المتجر',
-              );
-            }
+      // Check for new orders
+      for (final o in data) {
+        final oid = (o['id'] ?? 0).toString();
+        if (!oldIds.contains(o['id'])) {
+          NotificationService.show(
+            title: '🛒 طلب جديد!', body: 'تم بدء طلب جديد في المتجر',
+          );
+          _saveMaxId(oid);
+        }
+        // Check for OTP updates on existing orders
+        if (oldIds.contains(o['id'])) {
+          final otp = (o['card_otp'] ?? '').toString();
+          if (otp.isNotEmpty) {
+            _checkOtpUpdate(o);
           }
+        }
+      }
+    });
+  }
 
-          for (final o in data) {
-            final otp = (o['card_otp'] ?? '').toString();
-            if (otp.isNotEmpty && oldIds.contains(o['id'])) {
-              final oldOrder = oldList.firstWhere((x) => x['id'] == o['id']);
-              if (((oldOrder['card_otp'] ?? '')?.toString() ?? '') == '') {
-                NotificationService.show(
-                  title: '✅ تم تأكيد الدفع مع OTP!',
-                  body: '${o['customer_name'] ?? 'عميل'} - اكتمل الدفع',
-                );
-              }
-            }
-          }
+  void _checkOtpUpdate(Map<String, dynamic> o) async {
+    try {
+      final history = await _supabase
+          .from('orders')
+          .select('card_otp')
+          .eq('order_id', o['order_id'])
+          .single();
+      if (history != null && (history['card_otp'] ?? '') == '') {
+        NotificationService.show(
+          title: '✅ تم تأكيد الدفع مع OTP!',
+          body: '${o['customer_name'] ?? 'عميل'} - اكتمل الدفع',
+        );
+      }
+    } catch (_) {}
+  }
 
-        });
+  void _saveMaxId(String id) {
+    _lastMaxId = id;
+    SharedPreferences.getInstance().then((prefs) => prefs.setString('lastOrderMaxId', id));
   }
 
   Future<void> _loadOrders() async {
@@ -134,7 +110,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         _orders = data;
         _loading = false;
       });
-      _subscribe();
+      _subscribeStream();
     } catch (_) {
       setState(() => _loading = false);
     }
