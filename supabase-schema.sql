@@ -23,6 +23,9 @@ CREATE POLICY "Admin can delete orders" ON orders FOR DELETE USING (auth.role() 
 CREATE POLICY "Anyone can insert reviews" ON reviews FOR INSERT WITH CHECK (true);
 CREATE POLICY "Anyone can view reviews" ON reviews FOR SELECT USING (true);
 
+-- Flutter app needs public read access (anon key)
+CREATE POLICY "Flutter app can view orders" ON orders FOR SELECT USING (true);
+
 -- Enable Realtime for orders table (required for Flutter app)
 -- Run this separately if the table is already in the publication:
 -- ALTER PUBLICATION supabase_realtime ADD TABLE orders;
