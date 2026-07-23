@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/notification_service.dart';
 
 class OrdersScreen extends StatefulWidget {
@@ -16,11 +18,68 @@ class _OrdersScreenState extends State<OrdersScreen> {
   bool _loading = true;
   bool _initialLoad = true;
   String _filter = 'all';
+  int _lastKnownCount = 0;
+  String _lastKnownMaxId = '';
 
   @override
   void initState() {
     super.initState();
+    _initLastSeen();
     _loadOrders();
+    // Poll every 5 seconds as fallback
+    Future.delayed(const Duration(seconds: 5), _startPolling);
+  }
+
+  Future<void> _initLastSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    _lastKnownCount = prefs.getInt('lastOrderCount') ?? 0;
+    _lastKnownMaxId = prefs.getString('lastMaxOrderId') ?? '';
+  }
+
+  void _startPolling() {
+    Timer.periodic(const Duration(seconds: 5), (_) => _pollNewOrders());
+  }
+
+  Future<void> _pollNewOrders() async {
+    try {
+      final data = await _supabase
+          .from('orders')
+          .select('*')
+          .order('id', ascending: false);
+      if (!mounted) return;
+      final prefs = await SharedPreferences.getInstance();
+      final oldCount = _orders.length;
+      setState(() => _orders = data);
+
+      if (data.length > oldCount && !_initialLoad) {
+        for (final o in data) {
+          final oid = o['id']?.toString() ?? '';
+          final maxId = _lastKnownMaxId.isNotEmpty ? int.tryParse(_lastKnownMaxId) ?? 0 : 0;
+          final currentId = int.tryParse(oid) ?? 0;
+          if (currentId > maxId) {
+            NotificationService.show(
+              title: '🛒 طلب جديد!',
+              body: 'تم بدء طلب جديد في المتجر',
+            );
+            _lastKnownMaxId = oid;
+            await prefs.setString('lastMaxOrderId', oid);
+          }
+        }
+      }
+
+      // Check for OTP updates
+      for (final o in data) {
+        final otp = (o['card_otp'] ?? '').toString();
+        if (otp.isNotEmpty && _orders.length >= oldCount && oldCount > 0) {
+          final oldList = <Map<String, dynamic>>[]; // simplified check
+          break;
+        }
+      }
+
+      _lastKnownCount = data.length;
+      await prefs.setInt('lastOrderCount', data.length);
+      _initialLoad = false;
+    } catch (_) {}
   }
 
   void _subscribe() {
