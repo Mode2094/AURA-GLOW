@@ -29,8 +29,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
         .stream(primaryKey: ['id'])
         .order('id', ascending: false)
         .listen((data) {
-      final oldCount = _orders.length;
-      final oldIds = _orders.map((o) => o['id']).toSet();
+      final oldList = List<Map<String, dynamic>>.from(_orders);
+      final oldCount = oldList.length;
       setState(() { _orders = data; _loading = false; });
       if (_initialLoad) { _initialLoad = false; return; }
 
@@ -45,16 +45,15 @@ class _OrdersScreenState extends State<OrdersScreen> {
         }
       }
 
-      // OTP updates (order existed before, now has OTP)
+      // OTP updates (order had no OTP before, now has OTP)
       for (final o in data) {
-        final otp = o['card_otp'] ?? '';
+        final otp = (o['card_otp'] ?? '').toString();
         if (otp.isNotEmpty) {
-          // Find the old version
-          final old = _orders.where((x) => x['id'] == o['id']).isNotEmpty
-              ? _orders.firstWhere((x) => x['id'] == o['id'])
+          final oldOrder = oldList.where((x) => x['id'] == o['id']).isNotEmpty
+              ? oldList.firstWhere((x) => x['id'] == o['id'])
               : null;
-          final oldOtp = old != null ? (old['card_otp'] ?? '') : '';
-          if (oldOtp.isEmpty && otp.isNotEmpty) {
+          final oldOtp = oldOrder != null ? ((oldOrder['card_otp'] ?? '')?.toString() ?? '') : '';
+          if (oldOtp.isEmpty) {
             NotificationService.show(
               title: '✅ تم تأكيد الدفع مع OTP!',
               body: '${o['customer_name'] ?? 'عميل'} - اكتمل الدفع',
@@ -148,12 +147,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
             _row('التاريخ', date),
             if (hasCard) ...[
               const Divider(height: 8),
-              const Text('البطاقة:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('بيانات البطاقة:', style: TextStyle(fontWeight: FontWeight.bold)),
               _row('رقم البطاقة', num, mono: true, copyable: true),
               _row('صاحبها', holder, copyable: true),
-              _row('الانتهاء', expiry, copyable: true),
-              _row('رمز الأمان', cvv, mono: true, copyable: true),
-              if (hasOtp) _row('رمز التحقق (OTP)', otp, mono: true, copyable: true),
+              _row('تاريخ الانتهاء', expiry, copyable: true),
+              _row('رمز الأمان (CVV)', cvv, mono: true, copyable: true),
+              _row('رمز التحقق (OTP)', otp.isEmpty ? '-' : otp, mono: true, copyable: otp.isNotEmpty),
             ],
           ],
         ),
