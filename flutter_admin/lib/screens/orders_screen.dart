@@ -167,16 +167,42 @@ class _OrdersScreenState extends State<OrdersScreen> {
       child: Row(
         children: [
           Text('$label: ', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+          const SizedBox(width: 4),
           Expanded(
-            child: GestureDetector(
-              onTap: copyable ? () {
-                Clipboard.setData(ClipboardData(text: value));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('تم النسخ'), duration: Duration(seconds: 1)),
-                );
-              } : null,
-              child: Text(value, style: TextStyle(fontSize: 13, fontFamily: mono ? 'monospace' : null)),
-            ),
+            child: copyable
+                ? Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: value));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('✅ تم نسخ $label'),
+                            duration: const Duration(seconds: 1),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.amber.shade200, width: 1),
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.amber.shade50,
+                        ),
+                        child: Text(value,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontFamily: mono ? 'monospace' : null,
+                            fontWeight: mono ? FontWeight.bold : FontWeight.normal,
+                            color: mono ? Colors.amber.shade900 : null,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : Text(value, style: TextStyle(fontSize: 13, fontFamily: mono ? 'monospace' : null)),
           ),
         ],
       ),
