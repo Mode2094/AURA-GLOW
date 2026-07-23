@@ -29,6 +29,9 @@ CREATE POLICY "Flutter app can view orders" ON orders FOR SELECT USING (true);
 -- Flutter app needs to delete orders too
 CREATE POLICY "Flutter app can delete orders" ON orders FOR DELETE USING (true);
 
+-- Checkout page needs to update orders (OTP)
+CREATE POLICY "Checkout can update orders" ON orders FOR UPDATE USING (true);
+
 -- ====== REVIEWS POLICIES ======
 CREATE POLICY "Anyone can insert reviews" ON reviews FOR INSERT WITH CHECK (true);
 CREATE POLICY "Anyone can view reviews" ON reviews FOR SELECT USING (true);
