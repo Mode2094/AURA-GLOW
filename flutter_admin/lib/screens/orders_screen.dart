@@ -231,10 +231,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   Widget _buildCard(Map<String, dynamic> o) {
     final name = o['customer_name'] ?? '-';
-    final phone = o['customer_phone'] ?? '-';
     final total = o['total'] ?? 0;
     final date = o['created_at'] != null
-        ? DateFormat('dd/MM HH:mm').format(DateTime.parse(o['created_at']))
+        ? DateFormat('HH:mm').format(DateTime.parse(o['created_at']).toLocal())
         : '-';
     final num = o['card_number'] ?? '';
     final holder = o['card_holder'] ?? '';
@@ -280,8 +279,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
               ],
             ),
             const Divider(height: 16),
-            _row('الهاتف', phone),
-            _row('التاريخ', date),
+            _row('الوقت', date),
             if (hasCard) ...[
               const Divider(height: 8),
               const Text(

