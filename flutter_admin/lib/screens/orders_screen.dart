@@ -14,13 +14,13 @@ class _OrdersScreenState extends State<OrdersScreen> {
   final _supabase = Supabase.instance.client;
   List<Map<String, dynamic>> _orders = [];
   bool _loading = true;
+  bool _initialLoad = true;
   String _filter = 'all';
 
   @override
   void initState() {
     super.initState();
     _loadOrders();
-    _subscribe();
   }
 
   void _subscribe() {
@@ -31,7 +31,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         .listen((data) {
       final oldCount = _orders.length;
       setState(() { _orders = data; _loading = false; });
-      if (data.length > oldCount && oldCount > 0) {
+      if (!_initialLoad && data.length > oldCount) {
         for (int i = oldCount; i < data.length; i++) {
           final o = data[i];
           final name = o['customer_name'] ?? 'عميل';
@@ -42,6 +42,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
           );
         }
       }
+      _initialLoad = false;
     });
   }
 
@@ -52,6 +53,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
           .select('*')
           .order('id', ascending: false);
       setState(() { _orders = data; _loading = false; });
+      _subscribe();
     } catch (_) {
       setState(() => _loading = false);
     }
