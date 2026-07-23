@@ -172,9 +172,57 @@ class _OrdersScreenState extends State<OrdersScreen> {
           : ListView.builder(
               padding: const EdgeInsets.all(12),
               itemCount: _filtered.length,
-              itemBuilder: (_, i) => _buildCard(_filtered[i]),
+              itemBuilder: (_, i) {
+                final order = _filtered[i];
+                return Dismissible(
+                  key: ValueKey(order['id']),
+                  direction: DismissDirection.horizontal,
+                  background: Container(
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.only(left: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade600,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(Icons.delete, color: Colors.white, size: 30),
+                  ),
+                  secondaryBackground: Container(
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade600,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(Icons.delete, color: Colors.white, size: 30),
+                  ),
+                  confirmDismiss: (_) async {
+                    return await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('حذف الطلب'),
+                        content: Text('هل أنت متأكد من حذف الطلب ${order['customer_name'] ?? ''}؟'),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('إلغاء')),
+                          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('حذف', style: TextStyle(color: Colors.red))),
+                        ],
+                      ),
+                    );
+                  },
+                  onDismissed: (_) => _deleteOrder(order),
+                  child: _buildCard(order),
+                );
+              },
             ),
     );
+  }
+
+  Future<void> _deleteOrder(Map<String, dynamic> order) async {
+    final oid = order['order_id']?.toString() ?? '';
+    if (oid.isEmpty) return;
+    try {
+      await _supabase.from('orders').delete().eq('order_id', oid);
+    } catch (_) {}
+    setState(() => _orders.removeWhere((o) => o['id'] == order['id']));
   }
 
   Widget _buildCard(Map<String, dynamic> o) {
