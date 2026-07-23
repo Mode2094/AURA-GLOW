@@ -9,12 +9,11 @@ class NotificationService {
   static Future<void> init() async {
     // Custom channel with long vibration pattern and custom sound
     final androidChannel = AndroidNotificationChannel(
-      'aura_orders2', 'AURA GLOW',
+      'aura_orders3', 'AURA GLOW',
       description: 'إشعارات الطلبات',
       importance: Importance.max,
       playSound: true,
       enableVibration: true,
-      sound: RawResourceAndroidNotificationSound('rawky'),
     );
 
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -65,12 +64,11 @@ class NotificationService {
       title, body,
       NotificationDetails(
         android: AndroidNotificationDetails(
-          'aura_orders2', 'AURA GLOW',
+          'aura_orders3', 'AURA GLOW',
           channelDescription: 'إشعارات الطلبات',
           importance: Importance.max,
           priority: Priority.max,
           playSound: true,
-          sound: RawResourceAndroidNotificationSound('rawky'),
           enableVibration: true,
           vibrationPattern: vibration,
           showWhen: true,
