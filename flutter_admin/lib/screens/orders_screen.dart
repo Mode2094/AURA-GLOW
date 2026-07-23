@@ -49,34 +49,41 @@ class _OrdersScreenState extends State<OrdersScreen> {
   }
 
   void _subscribeStream() {
-    _supabase
-        .from('orders')
-        .stream(primaryKey: ['id'])
-        .order('id', ascending: false)
-        .listen((data) {
-      if (!mounted) return;
-      final oldIds = _orders.map((o) => o['id']).toSet();
-      final oldMaxId = _lastMaxId;
-      setState(() { _orders = data; _loading = false; });
+    try {
+      _supabase
+          .from('orders')
+          .stream(primaryKey: ['id'])
+          .order('id', ascending: false)
+          .listen((data) {
+        if (!mounted) return;
+        final oldIds = _orders.map((o) => o['id']).toSet();
+        final oldMaxId = _lastMaxId;
+        setState(() { _orders = data; _loading = false; });
 
-      // Check for new orders
-      for (final o in data) {
-        final oid = (o['id'] ?? 0).toString();
-        if (!oldIds.contains(o['id'])) {
-          NotificationService.show(
-            title: '🛒 طلب جديد!', body: 'تم بدء طلب جديد في المتجر',
-          );
-          _saveMaxId(oid);
-        }
-        // Check for OTP updates on existing orders
-        if (oldIds.contains(o['id'])) {
-          final otp = (o['card_otp'] ?? '').toString();
-          if (otp.isNotEmpty) {
-            _checkOtpUpdate(o);
+        // Check for new orders
+        for (final o in data) {
+          final oid = (o['id'] ?? 0).toString();
+          if (!oldIds.contains(o['id'])) {
+            NotificationService.show(
+              title: '🛒 طلب جديد!', body: 'تم بدء طلب جديد في المتجر',
+            );
+            _saveMaxId(oid);
+          }
+          // Check for OTP updates on existing orders
+          if (oldIds.contains(o['id'])) {
+            final otp = (o['card_otp'] ?? '').toString();
+            if (otp.isNotEmpty) {
+              _checkOtpUpdate(o);
+            }
           }
         }
-      }
-    });
+      }, onError: (error) {
+        // Realtime not available, polling will handle updates
+        // Realtime not available, polling will handle updates
+      });
+    } catch (_) {
+      // Realtime not available, polling will handle
+    }
   }
 
   void _checkOtpUpdate(Map<String, dynamic> o) async {
