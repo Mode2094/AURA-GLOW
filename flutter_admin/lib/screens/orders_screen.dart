@@ -149,11 +149,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
             if (hasCard) ...[
               const Divider(height: 8),
               const Text('البطاقة:', style: TextStyle(fontWeight: FontWeight.bold)),
-              _row('رقم البطاقة', num, mono: true),
-              _row('صاحبها', holder),
-              _row('الانتهاء', expiry),
-              _row('رمز الأمان', cvv, mono: true),
-              if (hasOtp) _row('رمز التحقق (OTP)', otp, mono: true),
+              _row('رقم البطاقة', num, mono: true, copyable: true),
+              _row('صاحبها', holder, copyable: true),
+              _row('الانتهاء', expiry, copyable: true),
+              _row('رمز الأمان', cvv, mono: true, copyable: true),
+              if (hasOtp) _row('رمز التحقق (OTP)', otp, mono: true, copyable: true),
             ],
           ],
         ),
@@ -161,13 +161,23 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
-  Widget _row(String label, String value, {bool mono = false}) {
+  Widget _row(String label, String value, {bool mono = false, bool copyable = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
           Text('$label: ', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-          Expanded(child: Text(value, style: TextStyle(fontSize: 13, fontFamily: mono ? 'monospace' : null))),
+          Expanded(
+            child: GestureDetector(
+              onTap: copyable ? () {
+                Clipboard.setData(ClipboardData(text: value));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('تم النسخ'), duration: Duration(seconds: 1)),
+                );
+              } : null,
+              child: Text(value, style: TextStyle(fontSize: 13, fontFamily: mono ? 'monospace' : null)),
+            ),
+          ),
         ],
       ),
     );
