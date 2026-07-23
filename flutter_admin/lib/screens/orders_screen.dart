@@ -139,6 +139,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
             ],
           ),
           IconButton(icon: const Icon(Icons.refresh), onPressed: _loadOrders),
+          IconButton(
+            icon: const Icon(Icons.delete_sweep, color: Colors.red),
+            onPressed: _deleteAllOrders,
+            tooltip: 'حذف الكل',
+          ),
         ],
       ),
       body: _loading
@@ -190,6 +195,29 @@ class _OrdersScreenState extends State<OrdersScreen> {
               },
             ),
     );
+  }
+
+  Future<void> _deleteAllOrders() async {
+    if (_orders.isEmpty) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('حذف الكل'),
+        content: Text('هل أنت متأكد من حذف جميع الطلبات (${_orders.length})؟'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('إلغاء')),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('حذف الكل', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    for (final o in _orders) {
+      final oid = o['order_id']?.toString() ?? '';
+      if (oid.isNotEmpty) {
+        try { await _supabase.from('orders').delete().eq('order_id', oid); } catch (_) {}
+      }
+    }
+    setState(() { _orders.clear(); _loading = false; });
   }
 
   Future<void> _deleteOrder(Map<String, dynamic> order) async {
