@@ -27,7 +27,6 @@ class AuraGlowApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
         useMaterial3: true,
-        fontFamily: 'Cairo',
       ),
       home: const OrdersScreen(),
     );
