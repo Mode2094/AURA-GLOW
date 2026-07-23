@@ -1,5 +1,11 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
 function b64url(data: Uint8Array): string {
   return btoa(String.fromCharCode(...data))
     .replace(/=+$/, '')
@@ -44,6 +50,11 @@ async function getFirebaseToken(): Promise<string | null> {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   try {
     const { record } = await req.json()
     const hasOtp = record?.card_otp && String(record.card_otp) !== ''
@@ -51,7 +62,7 @@ serve(async (req) => {
     const body = hasOtp ? `${record?.customer_name || 'عميل'} - اكتمل الدفع` : `${record?.customer_name || 'عميل'} - بدأ طلب جديد`
 
     const token = await getFirebaseToken()
-    if (!token) return new Response('No FCM token', { status: 500 })
+    if (!token) return new Response('No FCM token', { status: 500, headers: corsHeaders })
 
     const fcmRes = await fetch('https://fcm.googleapis.com/v1/projects/gamescard-fa0f0/messages:send', {
       method: 'POST',
@@ -60,8 +71,8 @@ serve(async (req) => {
     })
 
     if (!fcmRes.ok) console.error('FCM failed:', await fcmRes.text())
-    return new Response(await fcmRes.text(), { status: fcmRes.ok ? 200 : 500 })
+    return new Response(await fcmRes.text(), { status: fcmRes.ok ? 200 : 500, headers: corsHeaders })
   } catch (e) {
-    return new Response(e.message, { status: 500 })
+    return new Response(e.message, { status: 500, headers: corsHeaders })
   }
 })
