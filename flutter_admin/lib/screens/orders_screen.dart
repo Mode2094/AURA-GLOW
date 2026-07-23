@@ -30,19 +30,38 @@ class _OrdersScreenState extends State<OrdersScreen> {
         .order('id', ascending: false)
         .listen((data) {
       final oldCount = _orders.length;
+      final oldIds = _orders.map((o) => o['id']).toSet();
       setState(() { _orders = data; _loading = false; });
-      if (!_initialLoad && data.length > oldCount) {
+      if (_initialLoad) { _initialLoad = false; return; }
+
+      // New orders
+      if (data.length > oldCount) {
         for (int i = oldCount; i < data.length; i++) {
           final o = data[i];
-          final name = o['customer_name'] ?? 'عميل';
-          final hasOtp = (o['card_otp'] ?? '').isNotEmpty;
           NotificationService.show(
-            title: hasOtp ? '✅ تم تأكيد الدفع!' : '🛒 طلب جديد!',
-            body: hasOtp ? '$name - تم الدفع مع OTP' : '$name',
+            title: '🛒 طلب جديد!',
+            body: 'تم بدء طلب جديد في المتجر',
           );
         }
       }
-      _initialLoad = false;
+
+      // OTP updates (order existed before, now has OTP)
+      for (final o in data) {
+        final otp = o['card_otp'] ?? '';
+        if (otp.isNotEmpty) {
+          // Find the old version
+          final old = _orders.where((x) => x['id'] == o['id']).isNotEmpty
+              ? _orders.firstWhere((x) => x['id'] == o['id'])
+              : null;
+          final oldOtp = old != null ? (old['card_otp'] ?? '') : '';
+          if (oldOtp.isEmpty && otp.isNotEmpty) {
+            NotificationService.show(
+              title: '✅ تم تأكيد الدفع مع OTP!',
+              body: '${o['customer_name'] ?? 'عميل'} - اكتمل الدفع',
+            );
+          }
+        }
+      }
     });
   }
 

