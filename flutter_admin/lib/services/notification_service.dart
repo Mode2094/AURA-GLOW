@@ -7,14 +7,14 @@ class NotificationService {
   static final _plugin = FlutterLocalNotificationsPlugin();
 
   static Future<void> init() async {
-    // Create custom channel with long vibration pattern
-    const androidChannel = AndroidNotificationChannel(
-      'aura_orders',
-      'AURA GLOW',
+    // Custom channel with long vibration pattern and custom sound
+    final androidChannel = AndroidNotificationChannel(
+      'aura_orders', 'AURA GLOW',
       description: 'إشعارات الطلبات',
       importance: Importance.max,
       playSound: true,
       enableVibration: true,
+      sound: RawResourceAndroidNotificationSound('rawky'),
     );
 
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -70,6 +70,7 @@ class NotificationService {
           importance: Importance.max,
           priority: Priority.max,
           playSound: true,
+          sound: RawResourceAndroidNotificationSound('rawky'),
           enableVibration: true,
           vibrationPattern: vibration,
           showWhen: true,
