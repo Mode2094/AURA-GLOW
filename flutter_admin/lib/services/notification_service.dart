@@ -55,7 +55,11 @@ class NotificationService {
   }
 
   static Future<void> _showLocalNotification(String title, String body) async {
-    final vibration = Int64List.fromList([500, 200, 500, 200, 1000, 500, 1000, 500, 1000]);
+    // Long vibration: 1s vibrate, 0.5s pause, repeat 8 times = ~12 seconds
+    final vibration = Int64List.fromList([
+      1000, 500, 1000, 500, 1000, 500, 1000, 500,
+      1000, 500, 1000, 500, 1000, 500, 1000, 500,
+    ]);
     await _plugin.show(
       DateTime.now().millisecondsSinceEpoch ~/ 1000,
       title, body,

