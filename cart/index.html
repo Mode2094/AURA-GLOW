@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="../logo.png">
-    <title>סל הקניות - AURA GLOW</title>
+    <title>سلة التسوق - AURA GLOW</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -17,10 +17,10 @@
 
     <div class="bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 text-white text-center text-[10px] md:text-xs font-bold py-1.5 md:py-2 tracking-wide overflow-hidden relative">
         <div class="animate-marquee whitespace-nowrap flex items-center justify-center gap-2">
-            <span>🚚</span><span>משלוח חינם!</span><span class="mx-4">•</span>
-            <span>🚚</span><span>משלוח חינם!</span><span class="mx-4">•</span>
-            <span>🚚</span><span>משלוח חינם!</span><span class="mx-4">•</span>
-            <span>🚚</span><span>משלוח חינם!</span>
+            <span>🚚</span><span>شحن مجاني!</span><span class="mx-4">•</span>
+            <span>🚚</span><span>شحن مجاني!</span><span class="mx-4">•</span>
+            <span>🚚</span><span>شحن مجاني!</span><span class="mx-4">•</span>
+            <span>🚚</span><span>شحن مجاني!</span>
         </div>
     </div>
     <style>
@@ -63,7 +63,7 @@
                 </div>
             </div>
         </div>
-        <h1 class="text-3xl font-extrabold text-stone-900 mb-8">סל הקניות שלך</h1>
+        <h1 class="text-3xl font-extrabold text-stone-900 mb-8">سلة مشترياتك</h1>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-2 space-y-4" id="cart-items-list"></div>
@@ -73,7 +73,7 @@
                 <div class="space-y-3 text-sm">
                     <div class="flex justify-between text-stone-600">
                         <span>مجموع المنتجات:</span>
-                        <span id="summary-subtotal" class="font-bold text-stone-900">0.00 ₪</span>
+                        <span id="summary-subtotal" class="font-bold text-stone-900">0 ر.س</span>
                     </div>
                     <div class="flex justify-between text-stone-600">
                         <span>الشحن:</span>
@@ -81,7 +81,7 @@
                     </div>
                     <div class="flex justify-between text-stone-600">
                         <span>خصم القسيمة:</span>
-                        <span id="summary-discount" class="text-amber-700 font-bold">0.00 ₪</span>
+                        <span id="summary-discount" class="text-amber-700 font-bold">0 ر.س</span>
                     </div>
                 </div>
                 <div class="flex gap-2 pt-2">
@@ -92,7 +92,7 @@
                 <p id="promo-msg" class="text-xs hidden"></p>
                 <div class="border-t pt-4 flex items-center justify-between text-base font-bold text-stone-900">
                     <span>المجموع الكلي:</span>
-                    <span id="summary-total" class="text-amber-700 text-xl">0.00 ₪</span>
+                    <span id="summary-total" class="text-amber-700 text-xl">0 ر.س</span>
                 </div>
                 <button onclick="proceedToCheckout()" class="w-full bg-amber-700 hover:bg-amber-800 text-white py-4 rounded-2xl font-bold text-sm shadow-lg transition flex items-center justify-center gap-2">
                     <span>الانتقال لصفحة الدفع الآمن</span>
@@ -113,10 +113,12 @@
             </div>
             <div class="text-center space-y-4 border-t border-stone-800 pt-6">
                 <img src="../logo.png" alt="AURA GLOW" class="h-10 mx-auto opacity-95">
-                <p class="text-xs text-stone-500" data-i18n="footer_tag">متجرك الأول للعناية الملكية بالبشرة والجمال الطبيعي © 2026</p>
+                <p class="text-xs text-stone-500">متجرك الأول للعناية الملكية بالبشرة والجمال الطبيعي © 2026</p>
             </div>
         </div>
     </footer>
+
+    <script src="../money.js"></script>
 
     <script>
         let cartItems = [];
@@ -155,9 +157,9 @@
                 container.innerHTML = `
                     <div class="bg-white rounded-3xl p-12 text-center border border-stone-200 space-y-4">
                         <div class="text-4xl">🛒</div>
-                        <h3 class="text-lg font-bold text-stone-800" data-i18n="cart_empty_title">سلة التسوق فارغة حالياً</h3>
-                        <p class="text-xs text-stone-500" data-i18n="cart_empty_desc">يبدو أنك لم تقم بإضافة أي منتجات للسلة بعد.</p>
-                        <a href="/store/" class="inline-block bg-stone-900 text-white px-6 py-3 rounded-full text-xs font-bold mt-2" data-i18n="back_to_shop">العودة للتسوق</a>
+                        <h3 class="text-lg font-bold text-stone-800">سلة التسوق فارغة حالياً</h3>
+                        <p class="text-xs text-stone-500">يبدو أنك لم تقم بإضافة أي منتجات للسلة بعد.</p>
+                        <a href="/store/" class="inline-block bg-stone-900 text-white px-6 py-3 rounded-full text-xs font-bold mt-2">العودة للتسوق</a>
                     </div>
                 `;
                 updateSummary(0);
@@ -169,7 +171,7 @@
                         <img src="${item.image}" alt="${item.name}" class="w-20 h-20 object-contain bg-stone-50 rounded-2xl p-2 border border-stone-100">
                         <div>
                             <h4 class="font-extrabold text-stone-900 text-sm md:text-base">${item.name}</h4>
-                            <div class="text-xs text-amber-800 font-bold mt-1">${item.price}.00 ₪</div>
+                            <div class="text-xs text-amber-800 font-bold mt-1">${auraMoney(item.price)}</div>
                         </div>
                     </div>
                     <div class="flex items-center justify-between w-full sm:w-auto gap-6">
@@ -178,7 +180,7 @@
                             <span class="px-4 py-1 font-bold text-stone-800 text-sm min-w-[40px] text-center">${item.qty}</span>
                             <button onclick="changeQty(${item.id}, 1)" class="px-3 py-1 text-stone-600 hover:bg-stone-100 font-bold">+</button>
                         </div>
-                        <div class="text-base font-extrabold text-stone-900">${item.price * item.qty}.00 ₪</div>
+                        <div class="text-base font-extrabold text-stone-900">${auraMoney(item.price * item.qty)}</div>
                         <button onclick="removeItem(${item.id})" class="text-stone-400 hover:text-rose-600 text-lg font-bold p-1">&times;</button>
                     </div>
                 </div>
@@ -220,15 +222,15 @@
             let subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
             let total = subtotal - discountAmount;
             if (total < 0) total = 0;
-            document.getElementById('summary-subtotal').textContent = `${subtotal}.00 ₪`;
-            document.getElementById('summary-discount').textContent = `${discountAmount}.00 ₪`;
-            document.getElementById('summary-total').textContent = `${total}.00 ₪`;
+            document.getElementById('summary-subtotal').textContent = `${auraMoney(subtotal)}`;
+            document.getElementById('summary-discount').textContent = `${auraMoney(discountAmount)}`;
+            document.getElementById('summary-total').textContent = `${auraMoney(total)}`;
         }
 
         function updateSummary(subtotal) {
-            document.getElementById('summary-subtotal').textContent = `${subtotal || 0}.00 ₪`;
-            document.getElementById('summary-discount').textContent = `0.00 ₪`;
-            document.getElementById('summary-total').textContent = `${subtotal || 0}.00 ₪`;
+            document.getElementById('summary-subtotal').textContent = `${auraMoney(subtotal || 0)}`;
+            document.getElementById('summary-discount').textContent = auraMoney(0);
+            document.getElementById('summary-total').textContent = `${auraMoney(subtotal || 0)}`;
         }
 
         function applyPromoCode() {
@@ -237,7 +239,7 @@
             msg.classList.remove('hidden');
             if (code.toUpperCase() === 'AURA') {
                 discountAmount = 50;
-                msg.textContent = 'تم تطبيق كود الخصم بنجاح (-50 ₪)!';
+                msg.textContent = 'تم تطبيق كود الخصم بنجاح (-50 ر.س)!';
                 msg.className = 'text-xs text-emerald-600 font-bold block';
                 calculateTotals();
             } else {
@@ -289,7 +291,6 @@
         startCartUrgentTimer();
         window.addEventListener('storage', (e) => { if (e.key === 'auraCart') loadCart(); });
     </script>
-    <script src="../lang.js"></script>
-    <script src="../social-proof.js"></script>
+<script src="../social-proof.js"></script>
 </body>
 </html>

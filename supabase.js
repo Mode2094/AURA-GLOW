@@ -174,7 +174,7 @@ async function saveReviewToSupabase(productId, name, rating, comment) {
       name: name,
       rating: rating,
       comment: comment,
-      time: 'היום'
+      time: 'اليوم'
     });
     if (error) console.warn('supabase save review error:', error);
     return !error;

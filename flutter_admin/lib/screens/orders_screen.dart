@@ -276,7 +276,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   ),
                 ),
                 Text(
-                  '$total ₪',
+                  '$total ر.س',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.amber.shade800,

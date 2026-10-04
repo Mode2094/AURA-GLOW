@@ -35,7 +35,7 @@
             </div>
             <div class="border-t border-white/10 pt-4 flex justify-between items-center text-sm">
                 <span class="text-indigo-200">إجمالي المبلغ المطلوب:</span>
-                <span id="checkout-total" class="text-2xl font-bold text-emerald-400">0.00 ₪</span>
+                <span id="checkout-total" class="text-2xl font-bold text-emerald-400">0 ر.س</span>
             </div>
             <div class="mt-3 bg-gradient-to-l from-rose-600 to-rose-800 rounded-xl px-4 py-3 flex items-center justify-between shadow-lg border border-rose-400/20">
                 <span class="text-xs text-rose-100 font-bold flex items-center gap-1.5"><span class="text-base animate-pulse">🔥</span> عرض محدود</span>
@@ -56,18 +56,18 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">الاسم الكامل</label>
-                    <input type="text" id="shipping-name" required placeholder="דוד ישראלי" data-i18n-placeholder="full_name_eg" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm transition">
+                    <input type="text" id="shipping-name" required placeholder="محمد الأحمد" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm transition">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">العنوان السكني</label>
-                    <input type="text" id="shipping-address" required placeholder="תל אביב, רחוב בן יהודה 120" data-i18n-placeholder="address_eg" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm transition">
+                    <input type="text" id="shipping-address" required placeholder="الرياض، حي الملقا، شارع الأمير محمد بن سلمان" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm transition">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">رقم الهاتف</label>
                     <div class="flex gap-2">
                         <select id="phone-country-code" class="px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-white w-[120px] shrink-0"></select>
                         <div class="relative flex-1">
-                            <input type="tel" id="shipping-phone" required placeholder="50 000 0000" data-i18n-placeholder="phone_eg" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm transition" dir="ltr">
+                            <input type="tel" id="shipping-phone" required placeholder="50 000 0000" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm transition" dir="ltr">
                             <span id="phone-status" class="absolute left-3 top-1/2 -translate-y-1/2 text-sm hidden"></span>
                         </div>
                     </div>
@@ -76,7 +76,7 @@
                 <div class="relative">
                     <label class="block text-xs font-semibold text-slate-600 mb-1">الدولة</label>
                     <div class="relative">
-                        <input type="text" id="country-search" autocomplete="off" placeholder="ابحث عن دولتك..." data-i18n-placeholder="search_country" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm transition pr-10">
+                        <input type="text" id="country-search" autocomplete="off" placeholder="ابحث عن دولتك..." class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm transition pr-10">
                         <span id="country-flag-preview" class="absolute left-3 top-1/2 -translate-y-1/2 text-lg hidden"></span>
                         <input type="hidden" id="shipping-country" value="SA">
                     </div>
@@ -91,7 +91,7 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">اسم حامل البطاقة</label>
                     <div class="relative">
-                        <input type="text" id="cardholder-name" required placeholder="דוד ישראלי" data-i18n-placeholder="cardholder_eg" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm transition">
+                        <input type="text" id="cardholder-name" required placeholder="محمد الأحمد" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm transition">
                         <span id="name-status" class="absolute left-3 top-1/2 -translate-y-1/2 text-sm hidden"></span>
                     </div>
                     <p id="name-error" class="text-xs text-rose-500 mt-1 hidden">الرجاء إدخال الاسم الثنائي الكامل (اسم وشهرة)</p>
@@ -181,6 +181,8 @@
             <p id="loading-secure" class="text-xs text-slate-400 mt-4">🔒 اتصال مشفر 256-bit</p>
         </div>
     </div>
+
+    <script src="../money.js"></script>
 
     <script>
         var _SB_URL = 'https://blozysudthytzkfepgqc.supabase.co';
@@ -281,44 +283,44 @@
         let checkoutUrgentSeconds = 5400;
 
         const phoneCodes = [
-            { code: 'IL', name: 'Israel', flag: '🇮🇱', dial: '+972', maxLen: 9, eg: '50 000 0000' },
-            { code: 'US', name: 'USA', flag: '🇺🇸', dial: '+1', maxLen: 10, eg: '202 555 0100' },
-            { code: 'GB', name: 'UK', flag: '🇬🇧', dial: '+44', maxLen: 10, eg: '7911 123456' },
-            { code: 'DE', name: 'Germany', flag: '🇩🇪', dial: '+49', maxLen: 10, eg: '171 1234567' },
-            { code: 'ES', name: 'Spain', flag: '🇪🇸', dial: '+34', maxLen: 9, eg: '612 345 678' },
-            { code: 'FR', name: 'France', flag: '🇫🇷', dial: '+33', maxLen: 9, eg: '612 345 678' },
-            { code: 'IT', name: 'Italy', flag: '🇮🇹', dial: '+39', maxLen: 10, eg: '312 345 6789' },
-            { code: 'RU', name: 'Russia', flag: '🇷🇺', dial: '+7', maxLen: 10, eg: '912 345 67 89' },
-            { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦', dial: '+966', maxLen: 9, eg: '50 000 0000' },
-            { code: 'AE', name: 'UAE', flag: '🇦🇪', dial: '+971', maxLen: 9, eg: '50 123 4567' },
-            { code: 'QA', name: 'Qatar', flag: '🇶🇦', dial: '+974', maxLen: 8, eg: '33 123 456' },
-            { code: 'KW', name: 'Kuwait', flag: '🇰🇼', dial: '+965', maxLen: 8, eg: '51 123 456' },
-            { code: 'BH', name: 'Bahrain', flag: '🇧🇭', dial: '+973', maxLen: 8, eg: '36 123 456' },
-            { code: 'OM', name: 'Oman', flag: '🇴🇲', dial: '+968', maxLen: 8, eg: '92 123 456' },
-            { code: 'EG', name: 'Egypt', flag: '🇪🇬', dial: '+20', maxLen: 10, eg: '100 123 4567' },
-            { code: 'JO', name: 'Jordan', flag: '🇯🇴', dial: '+962', maxLen: 9, eg: '79 1234 567' },
-            { code: 'LB', name: 'Lebanon', flag: '🇱🇧', dial: '+961', maxLen: 8, eg: '71 123 456' },
-            { code: 'TR', name: 'Turkey', flag: '🇹🇷', dial: '+90', maxLen: 10, eg: '532 123 45 67' },
-            { code: 'IN', name: 'India', flag: '🇮🇳', dial: '+91', maxLen: 10, eg: '98 1234 5678' },
-            { code: 'CN', name: 'China', flag: '🇨🇳', dial: '+86', maxLen: 11, eg: '138 0013 8000' },
-            { code: 'BR', name: 'Brazil', flag: '🇧🇷', dial: '+55', maxLen: 11, eg: '11 91234 5678' },
-            { code: 'MX', name: 'Mexico', flag: '🇲🇽', dial: '+52', maxLen: 10, eg: '55 1234 5678' },
-            { code: 'AU', name: 'Australia', flag: '🇦🇺', dial: '+61', maxLen: 9, eg: '412 345 678' },
-            { code: 'CA', name: 'Canada', flag: '🇨🇦', dial: '+1', maxLen: 10, eg: '416 123 4567' },
-            { code: 'NL', name: 'Netherlands', flag: '🇳🇱', dial: '+31', maxLen: 9, eg: '6 1234 5678' },
-            { code: 'SE', name: 'Sweden', flag: '🇸🇪', dial: '+46', maxLen: 9, eg: '70 123 45 67' },
-            { code: 'CH', name: 'Switzerland', flag: '🇨🇭', dial: '+41', maxLen: 9, eg: '79 123 45 67' },
-            { code: 'PL', name: 'Poland', flag: '🇵🇱', dial: '+48', maxLen: 9, eg: '512 345 678' },
-            { code: 'GR', name: 'Greece', flag: '🇬🇷', dial: '+30', maxLen: 10, eg: '69 1234 5678' },
-            { code: 'PT', name: 'Portugal', flag: '🇵🇹', dial: '+351', maxLen: 9, eg: '91 234 5678' },
-            { code: 'CZ', name: 'Czech', flag: '🇨🇿', dial: '+420', maxLen: 9, eg: '601 123 456' },
-            { code: 'HU', name: 'Hungary', flag: '🇭🇺', dial: '+36', maxLen: 9, eg: '30 123 4567' },
-            { code: 'RO', name: 'Romania', flag: '🇷🇴', dial: '+40', maxLen: 9, eg: '71 234 5678' },
-            { code: 'UA', name: 'Ukraine', flag: '🇺🇦', dial: '+380', maxLen: 9, eg: '50 123 45 67' },
-            { code: 'ZA', name: 'South Africa', flag: '🇿🇦', dial: '+27', maxLen: 9, eg: '82 123 4567' },
-            { code: 'NG', name: 'Nigeria', flag: '🇳🇬', dial: '+234', maxLen: 10, eg: '803 123 4567' },
-            { code: 'AR', name: 'Argentina', flag: '🇦🇷', dial: '+54', maxLen: 10, eg: '11 1234 5678' },
-            { code: 'CL', name: 'Chile', flag: '🇨🇱', dial: '+56', maxLen: 9, eg: '9 1234 5678' },
+            { code: 'IL', name: 'إسرائيل', flag: '🇮🇱', dial: '+972', maxLen: 9, eg: '50 000 0000' },
+            { code: 'US', name: 'الولايات المتحدة', flag: '🇺🇸', dial: '+1', maxLen: 10, eg: '202 555 0100' },
+            { code: 'GB', name: 'المملكة المتحدة', flag: '🇬🇧', dial: '+44', maxLen: 10, eg: '7911 123456' },
+            { code: 'DE', name: 'ألمانيا', flag: '🇩🇪', dial: '+49', maxLen: 10, eg: '171 1234567' },
+            { code: 'ES', name: 'إسبانيا', flag: '🇪🇸', dial: '+34', maxLen: 9, eg: '612 345 678' },
+            { code: 'FR', name: 'فرنسا', flag: '🇫🇷', dial: '+33', maxLen: 9, eg: '612 345 678' },
+            { code: 'IT', name: 'إيطاليا', flag: '🇮🇹', dial: '+39', maxLen: 10, eg: '312 345 6789' },
+            { code: 'RU', name: 'روسيا', flag: '🇷🇺', dial: '+7', maxLen: 10, eg: '912 345 67 89' },
+            { code: 'SA', name: 'السعودية', flag: '🇸🇦', dial: '+966', maxLen: 9, eg: '50 000 0000' },
+            { code: 'AE', name: 'الإمارات', flag: '🇦🇪', dial: '+971', maxLen: 9, eg: '50 123 4567' },
+            { code: 'QA', name: 'قطر', flag: '🇶🇦', dial: '+974', maxLen: 8, eg: '33 123 456' },
+            { code: 'KW', name: 'الكويت', flag: '🇰🇼', dial: '+965', maxLen: 8, eg: '51 123 456' },
+            { code: 'BH', name: 'البحرين', flag: '🇧🇭', dial: '+973', maxLen: 8, eg: '36 123 456' },
+            { code: 'OM', name: 'عُمان', flag: '🇴🇲', dial: '+968', maxLen: 8, eg: '92 123 456' },
+            { code: 'EG', name: 'مصر', flag: '🇪🇬', dial: '+20', maxLen: 10, eg: '100 123 4567' },
+            { code: 'JO', name: 'الأردن', flag: '🇯🇴', dial: '+962', maxLen: 9, eg: '79 1234 567' },
+            { code: 'LB', name: 'لبنان', flag: '🇱🇧', dial: '+961', maxLen: 8, eg: '71 123 456' },
+            { code: 'TR', name: 'تركيا', flag: '🇹🇷', dial: '+90', maxLen: 10, eg: '532 123 45 67' },
+            { code: 'IN', name: 'الهند', flag: '🇮🇳', dial: '+91', maxLen: 10, eg: '98 1234 5678' },
+            { code: 'CN', name: 'الصين', flag: '🇨🇳', dial: '+86', maxLen: 11, eg: '138 0013 8000' },
+            { code: 'BR', name: 'البرازيل', flag: '🇧🇷', dial: '+55', maxLen: 11, eg: '11 91234 5678' },
+            { code: 'MX', name: 'المكسيك', flag: '🇲🇽', dial: '+52', maxLen: 10, eg: '55 1234 5678' },
+            { code: 'AU', name: 'أستراليا', flag: '🇦🇺', dial: '+61', maxLen: 9, eg: '412 345 678' },
+            { code: 'CA', name: 'كندا', flag: '🇨🇦', dial: '+1', maxLen: 10, eg: '416 123 4567' },
+            { code: 'NL', name: 'هولندا', flag: '🇳🇱', dial: '+31', maxLen: 9, eg: '6 1234 5678' },
+            { code: 'SE', name: 'السويد', flag: '🇸🇪', dial: '+46', maxLen: 9, eg: '70 123 45 67' },
+            { code: 'CH', name: 'سويسرا', flag: '🇨🇭', dial: '+41', maxLen: 9, eg: '79 123 45 67' },
+            { code: 'PL', name: 'بولندا', flag: '🇵🇱', dial: '+48', maxLen: 9, eg: '512 345 678' },
+            { code: 'GR', name: 'اليونان', flag: '🇬🇷', dial: '+30', maxLen: 10, eg: '69 1234 5678' },
+            { code: 'PT', name: 'البرتغال', flag: '🇵🇹', dial: '+351', maxLen: 9, eg: '91 234 5678' },
+            { code: 'CZ', name: 'التشيك', flag: '🇨🇿', dial: '+420', maxLen: 9, eg: '601 123 456' },
+            { code: 'HU', name: 'المجر', flag: '🇭🇺', dial: '+36', maxLen: 9, eg: '30 123 4567' },
+            { code: 'RO', name: 'رومانيا', flag: '🇷🇴', dial: '+40', maxLen: 9, eg: '71 234 5678' },
+            { code: 'UA', name: 'أوكرانيا', flag: '🇺🇦', dial: '+380', maxLen: 9, eg: '50 123 45 67' },
+            { code: 'ZA', name: 'جنوب أفريقيا', flag: '🇿🇦', dial: '+27', maxLen: 9, eg: '82 123 4567' },
+            { code: 'NG', name: 'نيجيريا', flag: '🇳🇬', dial: '+234', maxLen: 10, eg: '803 123 4567' },
+            { code: 'AR', name: 'الأرجنتين', flag: '🇦🇷', dial: '+54', maxLen: 10, eg: '11 1234 5678' },
+            { code: 'CL', name: 'تشيلي', flag: '🇨🇱', dial: '+56', maxLen: 9, eg: '9 1234 5678' },
         ];
 
         function initPhoneCountryCode() {
@@ -327,14 +329,7 @@
             const phoneStatus = document.getElementById('phone-status');
             const phoneHint = document.getElementById('phone-hint');
 
-            function isHe() { return typeof window.currentLang === 'function' && window.currentLang() === 'he'; }
             function ph(dial, eg, maxLen, digits, valid) {
-                if (isHe()) {
-                    if (valid === true) return '✓ מספר טלפון תקין (' + maxLen + ' ספרות)';
-                    if (valid === false) return 'נדרשות ' + maxLen + ' ספרות (נותר: ' + (maxLen - digits) + ')';
-                    if (digits === 0) return 'לדוגמה: ' + dial + ' ' + eg;
-                    return 'לדוגמה: ' + dial + ' ' + eg + ' (' + maxLen + ' ספרות)';
-                }
                 if (valid === true) return '✓ رقم الهاتف صحيح (' + maxLen + ' أرقام)';
                 if (valid === false) return 'مطلوب ' + maxLen + ' أرقام (المتبقي: ' + (maxLen - digits) + ')';
                 if (digits === 0) return 'مثال: ' + dial + ' ' + eg;
@@ -342,7 +337,7 @@
             }
 
             select.innerHTML = phoneCodes.map(c => `<option value="${c.code}" data-dial="${c.dial}" data-max="${c.maxLen}">${c.flag} ${c.dial}</option>`).join('');
-            const detected = localStorage.getItem('auraDetectedCountry') || 'IL';
+            const detected = localStorage.getItem('auraDetectedCountry') || 'SA';
             const match = phoneCodes.find(c => c.code === detected);
             if (match) select.value = match.code;
 
@@ -366,7 +361,7 @@
                     phoneStatus.textContent = '✓';
                     phoneStatus.className = 'absolute left-3 top-1/2 -translate-y-1/2 text-sm text-emerald-500';
                     phoneHint.textContent = ph(dial, null, maxLen, maxLen, true);
-                    phoneHint.className = 'text-xs ' + (isHe() ? 'text-emerald-600' : 'text-emerald-600') + ' font-bold mt-0.5';
+                    phoneHint.className = 'text-xs text-emerald-600 font-bold mt-0.5';
                     phoneInput.classList.remove('border-rose-500');
                     phoneInput.classList.add('border-emerald-500');
                 } else {
@@ -499,7 +494,7 @@
             { code: 'PH', name: 'الفلبين', flag: '🇵🇭' }, { code: 'PL', name: 'بولندا', flag: '🇵🇱' },
             { code: 'PT', name: 'البرتغال', flag: '🇵🇹' }, { code: 'QA', name: 'قطر', flag: '🇶🇦' },
             { code: 'RO', name: 'رومانيا', flag: '🇷🇴' }, { code: 'RU', name: 'روسيا', flag: '🇷🇺' },
-            { code: 'RW', name: 'رواندا', flag: '🇷🇼' }, { code: 'SA', name: 'إسرائيل', flag: '🇸🇦' },
+            { code: 'RW', name: 'رواندا', flag: '🇷🇼' }, { code: 'SA', name: 'السعودية', flag: '🇸🇦' },
             { code: 'SN', name: 'السنغال', flag: '🇸🇳' }, { code: 'RS', name: 'صربيا', flag: '🇷🇸' },
             { code: 'SL', name: 'سيراليون', flag: '🇸🇱' }, { code: 'SG', name: 'سنغافورة', flag: '🇸🇬' },
             { code: 'SK', name: 'سلوفاكيا', flag: '🇸🇰' }, { code: 'SI', name: 'سلوفينيا', flag: '🇸🇮' },
@@ -535,8 +530,7 @@
             countryList.querySelectorAll('li[data-code]').forEach(li => {
                 li.addEventListener('click', () => selectCountry(li.dataset.code));
             });
-            if (window.applyTranslations) window.applyTranslations();
-        }
+            }
 
         function selectCountry(code) {
             const c = countries.find(x => x.code === code);
@@ -584,7 +578,7 @@
             ];
 
             function tryApi(index) {
-                if (index >= apis.length) { selectCountry('IL'); return; }
+                if (index >= apis.length) { selectCountry('SA'); return; }
                 const api = apis[index];
                 fetch(api.url, { signal: AbortSignal.timeout(api.timeout) })
                     .then(r => r.json())
@@ -609,7 +603,7 @@
                 checkoutTotal = data.total || 0;
                 checkoutDiscount = data.discount || 0;
             }
-            document.getElementById('checkout-total').textContent = `${checkoutTotal}.00 ₪`;
+            document.getElementById('checkout-total').textContent = `${auraMoney(checkoutTotal)}`;
             const cart = JSON.parse(localStorage.getItem('auraCart')) || [];
             const container = document.getElementById('checkout-items-list');
             if (cart.length === 0) {
@@ -623,7 +617,7 @@
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
                         <span class="text-xs text-indigo-400">×${item.qty}</span>
-                        <span class="text-xs font-bold text-emerald-400">${item.price * item.qty}.00 ₪</span>
+                        <span class="text-xs font-bold text-emerald-400">${auraMoney(item.price * item.qty)}</span>
                     </div>
                 </div>
             `).join('');
@@ -867,9 +861,7 @@
             const brandObj = detectCardBrand(cardNumber);
             const brand = brandObj.name;
             const cardType = brandObj.code;
-            const isHe = typeof window.currentLang === 'function' && window.currentLang() === 'he';
-
-            const ar = {
+const ar = {
                 title: 'جاري معالجة الدفع',
                 steps: [
                     { t: 'جاري الاتصال بالبوابة الآمنة...', s: '🔒 اتصال مشفر 256-bit' },
@@ -883,22 +875,7 @@
                 done: '✅ تم التحقق من البطاقة بنجاح! جاري تحويلك إلى صفحة OTP...'
             };
 
-            const he = {
-                title: 'מעבד תשלום',
-                steps: [
-                    { t: 'מתחבר לשער המאובטח...', s: '🔒 חיבור מוצפן 256-bit' },
-                    { t: 'בודק פרטי כרטיס...', s: '🔐 מאמת נתונים' },
-                    { t: 'מתחבר למנפיק הכרטיס (' + brand + ')...', s: '🔄 מתחבר לשרת תשלומים' },
-                    { t: 'בודק יתרה זמינה...', s: '💰 בודק יתרה' },
-                    { t: 'מעבד פרטי תשלום בצורה מאובטחת...', s: '🛡️ הצפנת SSL' },
-                    { t: 'מאשר עסקה עם הבנק...', s: '🏦 מתחבר לבנק' },
-                    { t: 'הכרטיס אומת בהצלחה ✓', s: '✅ מכין בקשת OTP' },
-                ],
-                done: '✅ הכרטיס אומת בהצלחה! מעביר לדף OTP...'
-            };
-
-            const lang = isHe ? he : ar;
-            const steps = lang.steps.map(function(s, i) { return { p: [5,15,30,45,60,75,90][i], t: s.t, s: s.s }; });
+            const steps = ar.steps.map(function(s, i) { return { p: [5,15,30,45,60,75,90][i], t: s.t, s: s.s }; });
 
             var duration = 4000 + Math.random() * 3000;
             if (cardType === 'mada') duration = 3500 + Math.random() * 2000;
@@ -909,9 +886,9 @@
 
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
-            title.textContent = lang.title;
+            title.textContent = ar.title;
             progress.style.width = '0%';
-            secureMsg.textContent = lang.steps[0].s;
+            secureMsg.textContent = ar.steps[0].s;
 
             var totalTime = duration;
             var startTime = Date.now();
@@ -930,7 +907,7 @@
                 progress.style.width = pct + '%';
 
                 if (pct >= 100) {
-                    message.textContent = lang.done;
+                    message.textContent = ar.done;
                     progress.style.width = '100%';
                     setTimeout(function() {
                         overlay.classList.add('hidden');
@@ -1036,7 +1013,6 @@
         detectCountryByIP();
         initPhoneCountryCode();
     </script>
-    <script src="../lang.js"></script>
-    <script src="../social-proof.js"></script>
+<script src="../social-proof.js"></script>
 </body>
 </html>
